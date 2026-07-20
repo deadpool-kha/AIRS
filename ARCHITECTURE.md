@@ -6,44 +6,36 @@
 
 This document explains the technical architecture of the system.
 
-The goal is to build a modular AI research platform that collects information, analyzes evidence, evaluates quality, and generates investment research reports.
+The goal is to build a modular AI research platform that collects information, analyzes evidence, evaluates research quality, and generates professional investment research reports.
 
 ---
 
 # System Overview
 
-The system has five major layers:
+The system consists of five major layers.
 
-```
-                 User
-                  |
-                  |
-            Research Request
-                  |
-                  v
+```text
+             User
+              |
+              |
+       Research Request
+              |
+              v
 
-        Research Controller Layer
-
-                  |
-     --------------------------------
-     |              |               |
-     v              v               v
-
- Data Layer   Agent Layer    Intelligence Layer
-
-     |              |               |
-
- External      Analysis       LLM Reasoning
+   Research Controller Layer
+        (Loop Engine)
+              |
+   --------------------------------
+   |              |               |
+   v              v               v
+External      Analysis       LLM Reasoning
  Sources       Modules        Components
-
-                  |
-                  v
-
-            Report Generator
-                  |
-                  v
-
-          Investment Memo
+              |
+              v
+      Report Generator
+              |
+              v
+      Investment Memo
 ```
 
 ---
@@ -52,131 +44,191 @@ The system has five major layers:
 
 Responsible for collecting and storing information.
 
-Sources:
+## Data Sources
 
-* financial APIs
-* GitHub API
-* RSS feeds
-* public documents
+- Yahoo Finance (`yfinance`)
+- GitHub API
+- RSS feeds
+- Public documents
 
-Responsibilities:
+## Responsibilities
 
-* data collection
-* cleaning
-* normalization
-* storage
+- Data collection
+- Data cleaning
+- Data normalization
+- Data storage
 
 ---
 
 # Layer 2: Database Layer
 
-Initial database:
+## Initial Database
 
-SQLite
+- SQLite
 
-Stores:
+## Stores
 
-* entities
-* historical market data
-* technical activity
-* news
-* research states
-* reports
+- Entities
+- Historical market data
+- Technical activity
+- News
+- Research states
+- Reports
+- Loop iteration history
 
 ---
 
 # Layer 3: Agent Layer
 
-Agents are specialized modules.
+Agents are specialized analysis modules.
+
+---
 
 ## Quant Agent
 
+### Purpose
+
 Handles numerical analysis.
 
-Input:
+### Input
 
-Market data
+- Market data
 
-Output:
+### Output
 
-* trend
-* volatility
-* momentum
-* risk metrics
+- Trend analysis
+- Volatility
+- Momentum
+- Risk metrics
+
+### Technology
+
+- Python
+- pandas
+- numpy
+
+No LLM required.
+
+---
 
 ## Technical Agent
 
-Handles engineering ecosystem analysis.
+### Purpose
 
-Input:
+Analyzes engineering ecosystem health.
 
-GitHub data
+### Input
 
-Output:
+- GitHub data
 
-* developer activity
-* project health
-* maintenance signals
+### Output
+
+- Developer activity
+- Project health
+- Maintenance signals
+
+### Technology
+
+- Python
+- GitHub API
+
+Uses an LLM only for summary generation.
+
+---
 
 ## Business Agent
 
-Handles company activity.
+### Purpose
 
-Input:
+Analyzes business activity.
 
-News and public information
+### Input
 
-Output:
+- News
+- Public information
 
-* catalysts
-* business signals
+### Output
+
+- Business catalysts
+- Business signals
+
+### Technology
+
+- Python
+- Ollama (for summarization)
+
+---
 
 ## Risk Agent
 
-Finds weaknesses.
+### Purpose
 
-Output:
+Identifies weaknesses and potential risks.
 
-* risks
-* concerns
-* uncertainty
+### Output
+
+- Risk factors
+- Concerns
+- Areas of uncertainty
+
+### Technology
+
+- Rule-based analysis
+- Data analysis
+- LLM reasoning when appropriate
+
+---
+
+## Critic Agent
+
+### Purpose
+
+Evaluates overall research quality.
+
+### Input
+
+- Outputs from all analysis agents
+
+### Output
+
+- Quality assessment
+- Identified evidence gaps
+- Recommendations for additional research
+
+### Technology
+
+- Ollama (reasoning)
 
 ---
 
 # Layer 4: Loop Controller
 
-The loop controller manages workflow execution.
+The Loop Controller manages workflow execution using loop engineering principles.
 
-Responsibilities:
+## Responsibilities
 
-* maintain state
-* decide next action
-* track completion
-* call required agents
+- Maintain workflow state
+- Decide the next action
+- Track research completion
+- Invoke required agents
+- Manage research iterations (maximum of 3)
 
-The loop follows:
+## Workflow
 
-```
+```text
 Goal
-
-↓
-
+  ↓
 Planning
-
-↓
-
+  ↓
 Research
-
-↓
-
+  ↓
 Analysis
-
-↓
-
-Evaluation
-
-↓
-
+  ↓
+Evaluation (Critic)
+  ↓
+Decision:
+Iterate or Complete
+  ↓
 Completion
 ```
 
@@ -184,18 +236,40 @@ Completion
 
 # Layer 5: LLM Layer
 
-LLMs are used for:
+## LLM Responsibilities
 
-* planning
-* reasoning
-* critique
-* writing
+- Planning
+- Reasoning
+- Critique
+- Report writing
 
-LLMs are NOT used for:
+## LLMs Are NOT Used For
 
-* calculations
-* simple data processing
-* database tasks
+- Calculations
+- Simple data processing
+- Database operations
+
+## Runtime
+
+- Ollama
+
+## Supported Models
+
+- Qwen 2.5 7B
+- Llama 3.1 8B
+- Mistral 7B
+
+---
+
+# Error Handling Strategy
+
+| Failure | Handling Strategy |
+|----------|-------------------|
+| API timeout | Retry up to 3 times with exponential backoff, then use cached data if available |
+| Empty data | Log a warning, skip the affected agent, and continue with partial analysis |
+| LLM unavailable | Fall back to rule-based analysis and reduce confidence score |
+| Database locked | Wait 1 second, retry, then fail gracefully if unsuccessful |
+| GitHub rate limit | Use unauthenticated fallback where possible and flag data limitations |
 
 ---
 
@@ -203,6 +277,7 @@ LLMs are NOT used for:
 
 1. Modular components
 2. Local-first development
-3. Minimize API costs
-4. Human-readable outputs
-5. Evidence-based conclusions
+3. Minimize API costs (target: **$0**)
+4. Produce human-readable outputs
+5. Base conclusions on evidence
+6. Prefer controlled iteration over uncontrolled autonomy

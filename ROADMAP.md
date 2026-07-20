@@ -4,9 +4,7 @@
 
 ## Timeline
 
-Target completion:
-
-20 days
+Target completion: 3-4 weeks
 
 Primary goal:
 
@@ -45,513 +43,175 @@ Avoid:
 
 The priority:
 
-Working system > beautiful interface > advanced features
+Working system &gt; beautiful interface &gt; advanced features
 
 ---
 
 # Phase 0: Setup
 
-## Day 1
+## Goal: Project foundation exists
 
-Objectives:
+### Definition of Done:
+- [ ] GitHub repository initialized
+- [ ] Python virtual environment created
+- [ ] Folder structure created
+- [ ] README.md with project overview
+- [ ] requirements.txt with pinned dependencies
+- [ ] .gitignore configured
+- [ ] All documentation files (.md) in place
+- [ ] First commit pushed
 
-Create project foundation.
-
-Tasks:
-
-* Create GitHub repository
-* Create Python virtual environment
-* Setup folder structure
-* Setup README
-* Create MEMORY.md
-* Create ROADMAP.md
-* Create DECISIONS.md
-
-Repository:
-
-```
-AIRS/
-
-├── README.md
-├── MEMORY.md
-├── ROADMAP.md
-├── DECISIONS.md
-
-├── backend/
-
-├── agents/
-
-├── data/
-
-├── database/
-
-├── models/
-
-├── frontend/
-
-└── tests/
-```
-
-Deliverable:
-
-Empty but organized project.
+### Estimated: 1-2 days
+### Blocked by: Nothing
+### Blocks: Phase 1
 
 ---
 
 # Phase 1: Data Foundation
 
-## Days 2-4
+## Goal: System can collect and store market data
 
-Goal:
+### Definition of Done:
+- [ ] SQLite schema created and tested
+- [ ] market_data table with proper indexes
+- [ ] entities table
+- [ ] research_states table (for loop tracking)
+- [ ] yfinance fetcher working (AAPL, BTC-USD)
+- [ ] Data persists across script runs
+- [ ] Error handling for API failures
+- [ ] Unit tests for fetcher and db modules
 
-Build the data layer.
-
----
-
-## Market Data Module
-
-Collect:
-
-* historical prices
-* volume
-* market information
-
-Possible sources:
-
-* Yahoo Finance
-* CoinGecko
-
-Create:
-
-```
-data/market_data.py
-```
-
-Output:
-
-Structured data.
-
-Example:
-
-```
-Asset:
-ETH
-
-Price:
-xxxx
-
-30 day return:
-x%
-
-Volatility:
-x%
-
-Volume:
-x%
-```
-
----
-
-## Database
-
-Create SQLite database.
-
-Tables:
-
-```
-entities
-
-market_data
-
-news
-
-github_activity
-
-research_results
-```
-
----
-
-Deliverable:
-
-The system can collect and store market data.
+### Estimated: 3-5 days
+### Blocked by: Phase 0
+### Blocks: Phase 2
 
 ---
 
 # Phase 2: Quant Agent
 
-## Days 5-6
+## Goal: System produces quantitative analysis
 
-Goal:
+### Definition of Done:
+- [ ] Calculate returns (daily, weekly, monthly)
+- [ ] Calculate volatility (standard deviation)
+- [ ] Calculate momentum (rate of change)
+- [ ] Calculate drawdown (max peak-to-trough)
+- [ ] Calculate risk score
+- [ ] Output structured dict with confidence
+- [ ] No LLM used — pure Python/pandas
+- [ ] Unit tests
 
-Create first analytical agent.
-
-Important:
-
-This is NOT an LLM agent.
-
-It is a Python analysis module.
-
----
-
-Capabilities:
-
-Calculate:
-
-* returns
-* volatility
-* moving averages
-* momentum
-* drawdown
-* risk score
-
-Example output:
-
-```
-Quant Analysis:
-
-Trend:
-Positive
-
-Momentum:
-Strong
-
-Risk:
-Medium
-
-Confidence:
-75%
-```
-
----
-
-Deliverable:
-
-Given an asset:
-
-The system produces quantitative analysis.
+### Estimated: 2-3 days
+### Blocked by: Phase 1
+### Blocks: Phase 5 (Loop needs all agents)
 
 ---
 
 # Phase 3: Technical Agent
 
-## Days 7-9
+## Goal: System evaluates technical ecosystem health
 
-Goal:
+### Definition of Done:
+- [ ] GitHub API integration (unauthenticated)
+- [ ] Fetch commits, contributors, issues, releases
+- [ ] Calculate contributor growth rate
+- [ ] Calculate commit frequency
+- [ ] Assess project maintenance health
+- [ ] Output structured dict
+- [ ] Handle rate limits gracefully
 
-Analyze engineering activity.
-
----
-
-Data source:
-
-GitHub API.
-
-Collect:
-
-* contributors
-* commits
-* releases
-* issues
+### Estimated: 3-4 days
+### Blocked by: Phase 1
+### Blocks: Phase 5
 
 ---
 
-Metrics:
+# Phase 4: Business Agent
 
-Developer growth
+## Goal: System understands qualitative information
 
-Contribution frequency
+### Definition of Done:
+- [ ] RSS/news fetching capability
+- [ ] Local LLM (Ollama) summarization
+- [ ] Extract catalysts and events
+- [ ] Output structured dict with sources
+- [ ] Fallback when no news found
 
-Project activity
-
-Maintenance health
-
-Example output:
-
-```
-Technical Health:
-
-Developer Activity:
-Increasing
-
-Contributor Growth:
-+35%
-
-Project Status:
-Healthy
-```
+### Estimated: 2-3 days
+### Blocked by: Phase 1
+### Blocks: Phase 5
 
 ---
 
-Deliverable:
+# Phase 5: Loop Engine
 
-The system can evaluate technical ecosystem health.
+## Goal: System can iterate and improve research quality
 
----
+### Definition of Done:
+- [ ] Loop controller implemented
+- [ ] Critic Agent evaluates all outputs
+- [ ] Identifies gaps in research
+- [ ] Generates targeted iteration plan
+- [ ] Max 3 iterations enforced
+- [ ] Falls back to best-effort report
+- [ ] Loop state persisted to database
 
-# Phase 4: Business and News Agent
-
-## Days 10-12
-
-Goal:
-
-Understand external events.
-
----
-
-Sources:
-
-* RSS feeds
-* public announcements
-* websites
-
-Collect:
-
-* partnerships
-* funding
-* launches
-* major events
+### Estimated: 3-4 days
+### Blocked by: Phase 2, 3, 4
+### Blocks: Phase 6
 
 ---
 
-Use LLM only here.
+# Phase 6: Risk Agent
 
-Pipeline:
+## Goal: System identifies downside and weaknesses
 
-News
+### Definition of Done:
+- [ ] Analyze negative signals from all agents
+- [ ] Identify competition and regulatory risks
+- [ ] Assess concentration and volatility risks
+- [ ] Output structured risk assessment
+- [ ] Uses rules + LLM reasoning
 
-↓
-
-Retrieve relevant information
-
-↓
-
-Local LLM summary
-
-Output:
-
-```
-Business Analysis:
-
-Positive catalysts:
-- New partnership
-- Product release
-
-Risks:
-- Competition
-```
+### Estimated: 2-3 days
+### Blocked by: Phase 2, 3, 4
+### Blocks: Phase 7
 
 ---
 
-Deliverable:
-
-System understands qualitative information.
-
----
-
-# Phase 5: Risk Agent
-
-## Days 13-14
-
-Goal:
-
-Build downside analysis.
-
----
-
-Analyze:
-
-* negative news
-* competition
-* volatility
-* concentration risk
-* uncertainty
-
----
-
-Output:
-
-```
-Risk Assessment:
-
-High risks:
-
-1. Competition
-2. Valuation
-3. Regulatory uncertainty
-
-Overall Risk:
-Medium
-```
-
----
-
-Deliverable:
-
-System does not only produce bullish reports.
-
----
-
-# Phase 6: Loop Engine
-
-## Days 15-16
-
-Goal:
-
-Implement controlled agent workflow.
-
----
-
-The loop:
-
-```
-Receive research request
-
-↓
-
-Create research plan
-
-↓
-
-Collect evidence
-
-↓
-
-Run agents
-
-↓
-
-Critic evaluates quality
-
-↓
-
-Missing information?
-
-YES:
-Continue research
-
-NO:
-Generate report
-```
-
----
-
-Components:
-
-```
-controller.py
-
-planner.py
-
-critic.py
-
-memory.py
-```
-
----
-
-Deliverable:
-
-The system can decide whether research is complete.
-
----
-
-# Phase 7: Investment Committee Writer
-
-## Days 17-18
-
-Goal:
-
-Generate final research memo.
-
----
-
-Input:
-
-All agent outputs.
-
-Example:
-
-```
-Quant:
-Positive momentum
-
-Technical:
-Developer activity increasing
-
-Business:
-New partnership
-
-Risk:
-Competition increasing
-```
-
----
-
-LLM generates:
-
-```
-Investment Committee Report
-
-Overview:
-
-Bull Case:
-
-Bear Case:
-
-Key Risks:
-
-Open Questions:
-
-Conclusion:
-```
-
----
-
-Deliverable:
-
-Professional research report.
+# Phase 7: Report Generator
+
+## Goal: System generates professional investment memo
+
+### Definition of Done:
+- [ ] Combine all agent outputs
+- [ ] Local LLM writes structured report
+- [ ] Markdown output with sections
+- [ ] Includes confidence levels
+- [ ] Cites evidence and sources
+- [ ] Handles partial data gracefully
+
+### Estimated: 2-3 days
+### Blocked by: Phase 5, 6
+### Blocks: Phase 8
 
 ---
 
 # Phase 8: Interface and Presentation
 
-## Days 19-20
+## Goal: Project is presentable
 
-Goal:
+### Definition of Done:
+- [ ] Streamlit interface (optional)
+- [ ] README with screenshots
+- [ ] Architecture diagram
+- [ ] Demo video or GIF
+- [ ] Example reports in repo
+- [ ] Deployed or easily runnable
 
-Make project presentable.
-
----
-
-Build:
-
-Simple Streamlit interface.
-
-Features:
-
-* select entity
-* run analysis
-* display report
-* show evidence
-
----
-
-Create:
-
-README improvements
-
-Screenshots
-
-Architecture diagram
-
-Demo video
-
----
-
-Final deliverable:
-
-A working AI investment research system.
+### Estimated: 2-3 days
+### Blocked by: Phase 7
+### Blocks: Nothing
 
 ---
 
@@ -560,19 +220,16 @@ A working AI investment research system.
 If time becomes limited:
 
 Must have:
-
-YES:
-
-* Quant Agent
-* Technical Agent
-* Loop Controller
-* LLM Report Generator
+- [x] Quant Agent
+- [x] Technical Agent
+- [x] Loop Controller
+- [x] Critic Agent
+- [x] LLM Report Generator
 
 Optional:
-
-* UI
-* Business Agent
-* Advanced ML
+- [ ] Streamlit UI
+- [ ] Business Agent (can use placeholder)
+- [ ] Advanced ML
 
 ---
 
@@ -587,6 +244,7 @@ Not part of MVP:
 * cloud deployment
 * user accounts
 * mobile app
+* on-chain data integration (Phase 2 extension)
 
 ---
 
@@ -597,5 +255,6 @@ The project is successful if:
 1. A stranger can understand it from GitHub.
 2. A user can run an analysis.
 3. The system produces a structured report.
-4. Architecture demonstrates modern AI engineering.
-5. The developer can explain every design decision.
+4. The loop demonstrates self-improving research.
+5. Architecture demonstrates modern AI engineering.
+6. The developer can explain every design decision.

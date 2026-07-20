@@ -8,11 +8,11 @@ This file provides the complete context of the project for AI assistants and dev
 
 When assisting with this project:
 
-* Understand the architecture before suggesting changes.
-* Do not redesign the system unless explicitly requested.
-* Prefer simple, reliable engineering solutions.
-* Explain tradeoffs behind technical decisions.
-* Prioritize completing the MVP.
+- Understand the architecture before suggesting changes.
+- Do not redesign the system unless explicitly requested.
+- Prefer simple, reliable engineering solutions.
+- Explain tradeoffs behind technical decisions.
+- Prioritize completing the MVP.
 
 ---
 
@@ -23,18 +23,13 @@ Build an AI-powered investment research system that automates the workflow of an
 The system should analyze:
 
 1. Public companies
-
-   * Example: NVIDIA, Tesla
-
+   - Example: NVIDIA, Tesla
 2. Crypto protocols/assets
-
-   * Example: Ethereum, Solana
-
+   - Example: Ethereum, Solana, Stacks
 3. AI companies/startups
+   - Using publicly available information
 
-   * Using publicly available information
-
-The goal is NOT to predict stock or crypto prices.
+The goal is **NOT** to predict stock or crypto prices.
 
 The goal is to create structured, evidence-based research reports.
 
@@ -50,11 +45,11 @@ This project is being built as:
 
 The project combines:
 
-* AI agents
-* loop engineering
-* quantitative analysis
-* data engineering
-* financial research workflows
+- AI agents
+- Loop engineering (Andrew Ng's concept)
+- Quantitative analysis
+- Data engineering
+- Financial research workflows
 
 ---
 
@@ -62,11 +57,11 @@ The project combines:
 
 User provides:
 
-"Analyze [entity]"
+> "Analyze [entity]"
 
 Example:
 
-"Analyze NVIDIA"
+> "Analyze NVIDIA"
 
 The system performs an investment committee workflow:
 
@@ -74,29 +69,30 @@ The system performs an investment committee workflow:
 2. Analyze data
 3. Evaluate risks
 4. Critique the research
-5. Generate a final research memo
+5. Iterate if needed
+6. Generate a final research memo
 
 ---
 
 # Important Engineering Principle
 
-Do NOT use LLMs for everything.
+Do **NOT** use LLMs for everything.
 
 Use traditional programming for:
 
-* calculations
-* metrics
-* data processing
-* database operations
-* deterministic analysis
+- Calculations
+- Metrics
+- Data processing
+- Database operations
+- Deterministic analysis
 
 Use LLMs for:
 
-* planning
-* reasoning
-* critique
-* summarization
-* final report generation
+- Planning
+- Reasoning
+- Critique
+- Summarization
+- Final report generation
 
 The LLM is a reasoning layer, not the entire system.
 
@@ -104,40 +100,35 @@ The LLM is a reasoning layer, not the entire system.
 
 # High-Level Architecture
 
-```
-                         User
-                          |
-                          |
-                  Research Request
-                          |
-                          |
-              Research Controller
-                (Loop Engine)
-                          |
-        -----------------------------------
-        |          |          |           |
-        v          v          v           v
+```text
+                     User
+                      |
+                      |
+              Research Request
+                      |
+                      |
+          Research Controller
+            (Loop Engine)
+                      |
+    -----------------------------------
+    |          |          |           |
+    v          v          v           v
 
-     Quant     Technical   Business     Risk
-     Agent      Agent       Agent      Agent
+ Quant     Technical   Business     Risk
+ Agent      Agent       Agent      Agent
 
-        |          |          |           |
-        -----------------------------------
-
-                          |
-                          v
-
-                   Critic Agent
-
-                          |
-              ----------------------
-              |                    |
-        More Research        Final Report
-
-                          |
-                          v
-
-             Investment Committee Memo
+    |          |          |           |
+    -----------------------------------
+                      |
+                      v
+               Critic Agent
+                      |
+          ----------------------
+          |                    |
+    More Research        Final Report
+                      |
+                      v
+         Investment Committee Memo
 ```
 
 ---
@@ -148,50 +139,47 @@ The LLM is a reasoning layer, not the entire system.
 
 Responsible for collecting external information.
 
-Potential sources:
-
 ### Market Data
 
 Examples:
 
-* Yahoo Finance
-* CoinGecko
-* other free market APIs
+- Yahoo Finance (`yfinance`)
+- CoinGecko
 
-Data:
+Data collected:
 
-* price
-* volume
-* returns
-* volatility
+- Price
+- Volume
+- Returns
+- Volatility
 
 ### Technical Data
 
 Source:
 
-* GitHub API
+- GitHub API
 
-Data:
+Data collected:
 
-* commits
-* contributors
-* releases
-* issues
+- Commits
+- Contributors
+- Releases
+- Issues
 
 ### Business Data
 
 Sources:
 
-* RSS feeds
-* company websites
-* public announcements
+- RSS feeds
+- Company websites
+- Public announcements
 
-Data:
+Data collected:
 
-* partnerships
-* funding
-* product launches
-* important events
+- Partnerships
+- Funding
+- Product launches
+- Important events
 
 ---
 
@@ -199,20 +187,21 @@ Data:
 
 Initial database:
 
-SQLite
+- SQLite
 
 Future possibility:
 
-PostgreSQL
+- PostgreSQL
 
 Stores:
 
-* entities
-* market data
-* GitHub activity
-* news
-* research results
-* agent states
+- Entities
+- Market data
+- GitHub activity
+- News
+- Research results
+- Agent states
+- Loop iteration history
 
 ---
 
@@ -220,34 +209,34 @@ Stores:
 
 Agents are specialized modules.
 
-They are NOT separate ChatGPT conversations.
+They are **NOT** separate ChatGPT conversations.
 
 ---
 
 ## Quant Agent
 
-Purpose:
+### Purpose
 
 Analyze numerical information.
 
-Responsibilities:
+### Responsibilities
 
-* price trends
-* returns
-* volatility
-* momentum
-* drawdown
-* risk metrics
+- Price trends
+- Returns
+- Volatility
+- Momentum
+- Drawdown
+- Risk metrics
 
-Implementation:
+### Implementation
 
 Python
 
 Libraries:
 
-* pandas
-* numpy
-* statistics libraries
+- pandas
+- numpy
+- Statistics libraries
 
 No LLM required.
 
@@ -255,122 +244,120 @@ No LLM required.
 
 ## Technical Agent
 
-Purpose:
+### Purpose
 
 Analyze technical ecosystem health.
 
-Data:
+### Data
 
-GitHub activity.
+- GitHub activity
 
-Metrics:
+### Metrics
 
-* contributor growth
-* commit frequency
-* release activity
-* project maintenance
+- Contributor growth
+- Commit frequency
+- Release activity
+- Project maintenance
 
-Implementation:
+### Implementation
 
-Python.
+Python
+
+May use an LLM for summary only.
 
 ---
 
 ## Business Agent
 
-Purpose:
+### Purpose
 
 Analyze qualitative business information.
 
-Inputs:
+### Inputs
 
-* news
-* announcements
-* public information
+- News
+- Announcements
+- Public information
 
-May use local LLM.
+Uses a local LLM for summarization and extraction.
 
 ---
 
 ## Risk Agent
 
-Purpose:
+### Purpose
 
 Find weaknesses and negative signals.
 
-Examples:
+### Examples
 
-* competition
-* regulatory concerns
-* declining activity
-* high risk factors
+- Competition
+- Regulatory concerns
+- Declining activity
+- High-risk factors
 
 Uses:
 
-* rules
-* data analysis
-* LLM reasoning when useful
+- Rules
+- Data analysis
+- LLM reasoning when useful
 
 ---
 
 ## Critic Agent
 
-Purpose:
+### Purpose
 
 Evaluate research quality.
 
 Before generating the final report, it checks:
 
-* Is enough evidence collected?
-* Are claims supported?
-* Are risks considered?
-* Is information missing?
+- Is enough evidence collected?
+- Are claims supported?
+- Are risks considered?
+- Is information missing?
 
 If research is incomplete:
 
-The loop continues.
+The loop continues with targeted iteration.
 
 ---
 
 # Loop Engineering Design
 
-The system uses a controlled research loop.
+The system uses a controlled research loop inspired by Andrew Ng's loop engineering.
 
-The loop:
+## Research Loop
 
-```
+```text
 Receive Goal
-
-↓
-
+      ↓
 Create Research Plan
-
-↓
-
+      ↓
 Collect Evidence
-
-↓
-
+      ↓
 Run Analysis Agents
-
-↓
-
+      ↓
 Evaluate Research Quality
-
-↓
-
+   (Critic Agent)
+      ↓
 Missing Information?
-
-YES:
-Continue Research
-
-NO:
-Generate Final Report
+      ↓
+  YES         NO
+   |           |
+Continue     Generate
+Research      Final Report
+(Targeted
+Iteration)
 ```
 
 The loop controller decides workflow progression.
 
-The LLM does not control everything.
+Maximum iterations: **3**
+
+After three iterations, generate a best-effort report with confidence flags.
+
+The LLM does **NOT** control everything.
 
 ---
 
@@ -380,78 +367,73 @@ Local-first approach.
 
 No paid APIs during development.
 
-Runtime:
+### Runtime
 
-Ollama
+- Ollama
 
-Possible models:
+### Possible Models
 
-* Qwen 2.5 7B
-* Llama 3.1 8B
-* Mistral 7B
+- Qwen 2.5 7B
+- Llama 3.1 8B
+- Mistral 7B
 
-LLM responsibilities:
+### LLM Responsibilities
 
-* planning
-* reasoning
-* critique
-* writing reports
+- Planning
+- Reasoning
+- Critique
+- Writing reports
 
 ---
 
 # Hardware Environment
 
-Development machine:
+### Development Machine
 
-GPU:
+**GPU**
 
-NVIDIA GTX 1060 6GB
+- NVIDIA GTX 1060 6GB
 
-RAM:
+**RAM**
 
-16GB
+- 16 GB
 
-Operating System:
+**Operating System**
 
-Windows 10
+- Windows 10
 
-Constraint:
+### Constraint
 
 Development cost target:
 
-$0
+**$0**
 
 ---
 
 # Technology Stack
 
-Backend:
+## Backend
 
-Python
+- Python
+- FastAPI (future)
 
-FastAPI
+## Database
 
-Database:
+- SQLite
 
-SQLite
+## AI Runtime
 
-AI Runtime:
+- Ollama
 
-Ollama
+## Vector Search
 
-Vector Search:
+- FAISS or ChromaDB (future)
 
-FAISS or ChromaDB
-
-Frontend:
+## Frontend
 
 Initially:
 
-Streamlit
-
-Future:
-
-React/Next.js
+- Streamlit (future)
 
 ---
 
@@ -467,40 +449,34 @@ React/Next.js
 
 ---
 
-# Current Project Status
+# Git Workflow
 
-Stage:
-
-Planning / Initial Development
-
-Completed:
-
-* Project concept defined
-* Architecture designed
-* Documentation system created
-
-Current priorities:
-
-1. Create repository
-2. Setup Python environment
-3. Build database foundation
-4. Build first data collector
-5. Implement Quant Agent
+- All work happens on feature branches: `feature/quant-agent`
+- No commits to `main` without PR review (even when working solo)
+- Issues track all work: bugs, features, and research tasks
+- Close issues with commit messages such as: `Fixes #7`
+- Make small, frequent commits with descriptive messages
 
 ---
 
-# How AI Assistants Should Help
+# Current Project Status
 
-Act as a senior software engineer.
+## Stage
 
-Before providing code:
+Initial Development
 
-1. Understand the existing architecture.
-2. Check current project status.
-3. Avoid unnecessary rewrites.
-4. Explain why a solution is chosen.
+### Completed
 
-The developer makes final architectural decisions.
+- Project concept defined
+- Architecture designed
+- Documentation system created
+- GitHub repository initialized
+
+### Current Priorities
+
+1. Create the database foundation
+2. Build the first data collector
+3. Implement the Quant Agent
 
 ---
 
@@ -508,9 +484,9 @@ The developer makes final architectural decisions.
 
 The MVP is successful if:
 
-* A user can analyze an entity.
-* The system collects real data.
-* Agents produce structured analysis.
-* The loop evaluates research quality.
-* The system generates a professional investment memo.
-* The project demonstrates modern AI engineering practices.
+- A user can analyze an entity.
+- The system collects real data.
+- Agents produce structured analysis.
+- The loop evaluates research quality.
+- The system generates a professional investment memo.
+- The project demonstrates modern AI engineering practices.
