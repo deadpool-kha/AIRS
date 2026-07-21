@@ -77,3 +77,33 @@ Application to AIRS:
 - Every task gets an issue
 - Branch names reference issues: `feature/#4-database-schema`
 - Commit messages close issues: `Closes #4`
+
+---
+
+## 2026-07-20: Building lesson.py
+
+Learned:
+Writing a standalone script first, then splitting into modules, is easier than building modular from scratch.
+
+Application to AIRS:
+- Built lesson.py with fetch → analyze → save in one file
+- Understood each piece before splitting into data/, agents/
+- Now can explain every line in the "complex" project files
+
+Source: Personal experience, guided by senior dev mentor
+
+---
+
+## 2026-07-20: Financial Metrics Implementation
+
+Learned:
+- pct_change() is vectorized (100x faster than Python loops)
+- cummax() finds running peak for drawdown calculation
+- Annualized volatility = daily_std * sqrt(252)
+- Risk score combines multiple metrics into interpretable 0-1 scale
+
+Application to AIRS:
+- All Quant Agent metrics use these exact patterns
+- Can now explain metrics to non-technical interviewers
+
+Source: pandas documentation, quantitative finance basics

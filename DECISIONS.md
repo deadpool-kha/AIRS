@@ -192,3 +192,70 @@ Rejected alternatives:
 * Mental tracking (unreliable, not visible)
 
 Revisit if: Project grows to 3+ contributors
+
+---
+
+# Decision 008
+
+## Use INSERT OR REPLACE for idempotent storage
+
+Date: 2026-07-20
+
+Decision:
+Use SQLite's INSERT OR REPLACE instead of INSERT.
+
+Reason:
+- Prevents crashes when re-fetching same ticker+date
+- Makes operations idempotent (safe to re-run)
+- Simpler than checking existence first
+
+Rejected alternatives:
+- SELECT then INSERT (more queries, race conditions)
+- INSERT with try/except (ugly, exception-driven logic)
+
+Revisit if: Need to preserve historical versions of same data
+
+---
+
+# Decision 009
+
+## Use json.dumps for flexible schema columns
+
+Date: 2026-07-20
+
+Decision:
+Store agent_outputs and critic_feedback as JSON strings.
+
+Reason:
+- SQLite has no native dict/list types
+- JSON is human-readable and portable
+- Avoids schema changes when agent outputs evolve
+
+Rejected alternatives:
+- Separate table per agent (too many tables, complex joins)
+- Pickle (Python-only, not human-readable)
+- Multiple columns per metric (rigid, breaks on changes)
+
+Revisit if: Need to query inside JSON (then use PostgreSQL JSONB)
+
+---
+
+# Decision 010
+
+## Separate fetcher from database (Adapter Pattern)
+
+Date: 2026-07-20
+
+Decision:
+data/fetcher.py only fetches. data/db.py only stores.
+
+Reason:
+- If yfinance breaks, change one file
+- If we switch to PostgreSQL, change one file
+- Each module has one reason to change (Single Responsibility Principle)
+
+Rejected alternatives:
+- Combined fetch+save function (tight coupling)
+- Direct yfinance calls in main.py (no abstraction)
+
+Revisit if: Need transaction-level fetch+save atomicity
