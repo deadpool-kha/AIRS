@@ -66,6 +66,30 @@
   - Trend detection (bullish/bearish)
 - `main.py` — CLI entry point with `--entity` and `--quant-only` flags
 
+
+---
+
+## [0.3.1] - 2026-07-21
+
+### Added
+- Auditable confidence system based on DDScore feedback (Issue #13)
+  - Confidence breakdown: data sufficiency (30%), metric completeness (30%), data freshness (20%), calculation stability (20%)
+  - Each metric includes source tracking: source, ticker, period, calculation method, timestamp
+  - `--show-sources` CLI flag to display full traceability
+  - Default output stays clean; detailed view available on demand
+- `critic_history` table in SQLite for append-only feedback tracking
+
+### Changed
+- `agents/quant.py`: Confidence now calculated from components, not just row count
+- `main.py`: Added `--show-sources` argument, conditional source display
+
+### External Feedback
+- Issue #13: DDScore (Playful Pixels Oy) provided detailed feedback on confidence auditability
+- Response: Implemented lightweight version of MemoClaimReceipt principles for MVP
+
+### Closed Issues
+- #4: Implement Quant Agent (enhanced with v2 features)
+
 ### Verified
 - AAPL data fetches and persists correctly
 - Quant Agent produces structured analysis output

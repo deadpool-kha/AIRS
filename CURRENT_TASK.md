@@ -2,14 +2,14 @@
 
 # Current Development Status
 
-**Last Updated:** 2026-07-20
+**Last Updated:** 2026-07-21
 
 ---
 
 # Current Phase
 
-- ✅ Phase 1: Data Foundation (**COMPLETE**)
-- ✅ Phase 2: Quant Agent (**COMPLETE**)
+- ✅ Phase 1: Data Foundation (COMPLETE)
+- ✅ Phase 2: Quant Agent (COMPLETE)
 
 ---
 
@@ -20,66 +20,84 @@
 - [x] 2026-07-20: Project scaffold and folder structure → Issue #1
 - [x] 2026-07-20: Database schema (SQLite, 4 tables) → Issue #2
 - [x] 2026-07-20: Market data fetcher (yfinance with retry) → Issue #3
-- [x] 2026-07-20: Quant Agent (returns, volatility, momentum, drawdown, risk score, trend) → Issue #4
+- [x] 2026-07-20: Quant Agent v1
+  - Returns
+  - Volatility
+  - Momentum
+  - Maximum drawdown
+  - Risk score
+  - Trend detection
+- [x] 2026-07-21: Quant Agent v2 — Auditable confidence based on DDScore feedback
+  - Confidence breakdown with component scores and explanations
+  - Source tracking for every metric (source, ticker, period, calculation, timestamp)
+  - `--show-sources` CLI flag for full traceability
+  - Append-only `critic_history` table (foundation for loop engineering)
 
 ---
 
 # Active Issue
 
-- **Issue #5:** Implement Technical Agent
-  - **Status:** Not Started
-  - **Branch:** `feature/#5-technical-agent` (create when ready)
+## Issue #5: Implement Technical Agent
+
+- **Status:** Not Started
+- **Branch:** `feature/#5-technical-agent` (when ready)
 
 ---
 
 # Next Tasks (Priority Order)
 
-| Priority | Issue | Task | Status |
-|----------|-------|------|--------|
-| 🔴 High | #5 | Implement Technical Agent (GitHub analysis) | ⏳ Pending |
-| 🟡 Medium | #6 | Implement Business Agent (news analysis) | ⏳ Pending |
-| 🟡 Medium | #7 | Implement Risk Agent | ⏳ Pending |
-| 🔴 High | #8 | Implement Critic Agent (loop engineering) | ⏳ Pending |
-| 🔴 High | #9 | Implement Loop Controller | ⏳ Pending |
-| 🔴 High | #10 | Implement Report Generator | ⏳ Pending |
-| 🔴 High | #11 | Ollama Integration | ⏳ Pending |
+1. **Issue #5:** Implement Technical Agent (GitHub analysis) — **High**
+2. **Issue #6:** Implement Business Agent (news analysis) — **Medium**
+3. **Issue #7:** Implement Risk Agent — **Medium**
+4. **Issue #8:** Implement Critic Agent (loop engineering) — **High**
+5. **Issue #9:** Implement Loop Controller — **High**
+6. **Issue #10:** Implement Report Generator — **High**
+7. **Issue #11:** Ollama integration — **High**
 
 ---
 
 # What Works Right Now
 
-```bash
-# Fetch and store market data
-python main.py --entity AAPL
+### Fetch and store market data
 
-# Run Quant Agent analysis
+```bash
+python main.py --entity AAPL
+```
+
+### Run Quant Agent analysis
+
+```bash
 python main.py --entity AAPL --quant-only
+```
+
+### Run Quant Agent with full source traceability
+
+```bash
+python main.py --entity AAPL --quant-only --show-sources
 ```
 
 ### Current Output
 
-The Quant Agent currently generates:
-
 - Trend
-- Current Price
+- Current price
 - Volatility
-- Risk Score
-- Maximum Drawdown
+- Risk score
+- Maximum drawdown
 - Returns
-- Confidence Score
+- Confidence score with detailed breakdown
+- Optional source tracking for every reported metric
 
 ---
 
 # Current Blockers
 
-- None 🎉
+None.
 
 ---
 
 # Notes
 
-- Project is functional for demonstration purposes.
-- Quant Agent demonstrates pure Python financial analysis (no LLM required).
-- Database persists data across runs.
-- Supports both stocks (AAPL, TSLA) and cryptocurrencies (BTC-USD, ETH-USD).
-- Loop engineering and the remaining agents are the next major development phase.
+- Received professional feedback from **DDScore (Playful Pixels Oy)** on **Issue #13**.
+- Implemented an auditable confidence framework based on their recommendations.
+- Design principle: **confidence must always be explainable, not just a single number**.
+- The next development phase focuses on loop engineering and implementing the remaining specialized agents.

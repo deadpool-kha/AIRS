@@ -107,3 +107,41 @@ Application to AIRS:
 - Can now explain metrics to non-technical interviewers
 
 Source: pandas documentation, quantitative finance basics
+
+---
+
+## 2026-07-21: Auditable Confidence Design
+
+Learned:
+Professional financial software requires traceability, not just results.
+
+Key insight from DDScore feedback:
+- "A report that looks confident but can't be verified is dangerous"
+- Confidence must be decomposable: show WHY it's high or low
+- Every claim needs a source: where did this number come from?
+- Critic feedback must be append-only, not silently erased
+
+Application to AIRS:
+- Replaced flat confidence (0.85) with component breakdown
+- Added source tracking to every metric (yfinance source, calculation method, timestamp)
+- Built --show-sources flag for audit mode vs clean mode
+- Designed critic_history table for immutable feedback
+
+Source: GitHub Issue #13 feedback from DDScore at Playful Pixels Oy
+
+---
+
+## 2026-07-21: Responding to Professional Feedback
+
+Learned:
+How to engage with expert feedback without overcommitting.
+
+Pattern:
+1. Acknowledge the insight
+2. Scope the implementation for MVP
+3. Commit to principles long-term
+4. Reference their work
+
+This builds relationships and shows professional maturity.
+
+Source: GitHub Issue #13, external contributor feedback

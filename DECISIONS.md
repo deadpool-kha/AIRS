@@ -259,3 +259,58 @@ Rejected alternatives:
 - Direct yfinance calls in main.py (no abstraction)
 
 Revisit if: Need transaction-level fetch+save atomicity
+
+---
+
+# Decision 011
+
+## Make confidence auditable based on external feedback
+
+Date: 2026-07-21
+
+Decision:
+Replace flat confidence score with component breakdown and source tracking.
+
+Reason:
+- External feedback from DDScore (Issue #13) highlighted that unverifiable confidence is dangerous
+- Financial reports must be traceable to their source data and calculations
+- Component breakdown makes confidence debuggable and improvable
+
+Implementation:
+- 4 components: data sufficiency (30%), metric completeness (30%), data freshness (20%), calculation stability (20%)
+- Each metric carries source metadata: source API, ticker, period, calculation, timestamp
+- --show-sources flag toggles between clean and audit views
+
+Rejected alternatives:
+- Keep flat confidence (ignores expert feedback, not professional)
+- Implement full MemoClaimReceipt (20-column table, beyond MVP scope)
+- Hide sources entirely (defeats the purpose)
+
+Revisit if: Need full cryptographic provenance or cross-run claim verification
+
+---
+
+# Decision 012
+
+## Use append-only critic history
+
+Date: 2026-07-21
+
+Decision:
+Critic findings are never deleted, only resolved or superseded.
+
+Reason:
+- Prevents silent loss of negative feedback
+- Maintains audit trail of research quality over iterations
+- Aligns with DDScore feedback on immutability
+
+Implementation:
+- critic_history table with status: open, resolved, superseded
+- New iterations create new records, don't update old ones
+- Resolution requires explicit note and iteration reference
+
+Rejected alternatives:
+- Overwrite critic feedback each iteration (loses history)
+- Delete resolved findings (not auditable)
+
+Revisit if: Need to purge old findings for performance
