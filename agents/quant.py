@@ -18,6 +18,7 @@ Financial concepts:
 
 import pandas as pd
 import numpy as np
+from datetime import datetime
 
 
 def calculate_returns(df: pd.DataFrame) -> dict:
@@ -188,6 +189,55 @@ def determine_trend(df: pd.DataFrame, mas: dict) -> str:
         return "insufficient_data"
 
 
+def calculate_confidence(df, metrics):
+    reasons = []
+    score = 0.0
+    
+    # Data sufficiency (30%)
+    if len(df) >= 30:
+        score += 0.30
+        reasons.append("Sufficient data: 30+ days")
+    elif len(df) >= 20:
+        score += 0.20
+        reasons.append("Limited data: 20-29 days")
+    else:
+        reasons.append("Insufficient data: <20 days")
+    
+    # Metric completeness (30%)
+    required = ["volatility", "momentum", "drawdown", "trend"]
+    present = sum(1 for m in required if metrics.get(m) is not None)
+    metric_score = present / len(required)
+    score += 0.30 * metric_score
+    reasons.append(f"Metrics complete: {present}/{len(required)}")
+    
+    # Data freshness (20%)
+    latest = df.index[-1]
+    days_old = (pd.Timestamp.now() - latest).days
+    if days_old <= 1:
+        score += 0.20
+        reasons.append("Data fresh: <=1 day old")
+    elif days_old <= 3:
+        score += 0.10
+        reasons.append("Data stale: 2-3 days old")
+    else:
+        reasons.append(f"Data old: {days_old} days")
+    
+    # Calculation stability (20%)
+    score += 0.20
+    reasons.append("Deterministic calculations: reproducible")
+    
+    return {
+        "score": round(score, 4),
+        "reasons": reasons,
+        "components": {
+            "data_sufficiency": 0.30 if len(df) >= 30 else 0.20 if len(df) >= 20 else 0.0,
+            "metric_completeness": round(metric_score, 4),
+            "data_freshness": 0.20 if days_old <= 1 else 0.10 if days_old <= 3 else 0.0,
+            "calculation_stability": 0.20
+        }
+    }
+
+
 def analyze(ticker: str, df: pd.DataFrame) -> dict:
     """
     Main entry point for Quant Agent.
@@ -212,6 +262,8 @@ def analyze(ticker: str, df: pd.DataFrame) -> dict:
             "error": "Insufficient data (need at least 5 days)"
         }
     
+   
+   
     # Calculate all metrics
     returns = calculate_returns(df)
     volatility = calculate_volatility(df)
@@ -221,25 +273,45 @@ def analyze(ticker: str, df: pd.DataFrame) -> dict:
     risk_score = calculate_risk_score(volatility, drawdown["max_drawdown"])
     trend = determine_trend(df, mas)
     
+    
+    now = datetime.now().isoformat()
+    period = f"{len(df)}d"
+    
+    # Build metrics dict
+    metrics = {
+        "returns": returns,
+        "volatility": volatility,
+        "momentum": momentum,
+        "moving_averages": mas,
+        "drawdown": drawdown,
+        "risk_score": risk_score,
+        "trend": trend,
+        "current_price": round(df["Close"].iloc[-1], 2),
+        "data_points": len(df),
+    }
+    # Source tracking (separate, hidden unless requested)
+    metrics["_sources"] = {
+    "returns": {"source": "yfinance", "ticker": ticker, "period": period, "calculated_at": now, "calculation": "pct_change()"},
+    "volatility": {"source": "yfinance", "ticker": ticker, "period": period, "calculated_at": now, "calculation": "std(daily_returns) * sqrt(252)"},
+    "momentum": {"source": "yfinance", "ticker": ticker, "period": period, "calculated_at": now, "calculation": "(current - past) / past"},
+    "moving_averages": {"source": "yfinance", "ticker": ticker, "period": period, "calculated_at": now, "calculation": "rolling(window).mean()"},
+    "drawdown": {"source": "yfinance", "ticker": ticker, "period": period, "calculated_at": now, "calculation": "(cummax - current) / cummax"},
+    "risk_score": {"source": "calculated", "ticker": ticker, "period": period, "calculated_at": now, "calculation": "0.6*(vol/0.8) + 0.4*(drawdown/0.5)"},
+    "trend": {"source": "calculated", "ticker": ticker, "period": period, "calculated_at": now, "calculation": "price vs SMA_20 vs SMA_50"},
+    "current_price": {"source": "yfinance", "ticker": ticker, "period": period, "calculated_at": now, "calculation": "latest close price"},
+    "data_points": {"source": "yfinance", "ticker": ticker, "period": period, "calculated_at": now, "calculation": "count of rows"},
+}
+    
     # Determine confidence based on data quality
-    confidence = 0.85 if len(df) >= 30 else 0.70 if len(df) >= 20 else 0.50
+    confidence = calculate_confidence(df, metrics )
     
     # Build output
     result = {
         "agent": "quant",
         "ticker": ticker,
-        "metrics": {
-            "returns": returns,
-            "volatility": volatility,
-            "momentum": momentum,
-            "moving_averages": mas,
-            "drawdown": drawdown,
-            "risk_score": risk_score,
-            "trend": trend,
-            "current_price": round(df["Close"].iloc[-1], 2),
-            "data_points": len(df),
-        },
-        "confidence": confidence,
+        "metrics": metrics ,
+        "confidence": confidence["score"],
+        "confidence_breakdown" : confidence,
         "status": "complete",
     }
     
