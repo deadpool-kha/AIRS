@@ -15,7 +15,7 @@ import pandas as pd
 from data.db import init_db, save_market_data, get_market_data, save_entity, get_entity
 from data.fetcher import fetch_with_retry
 from agents.quant import analyze as quant_analyze
-
+from agents.technical import analyze as technical_analyze
 
 def run_quant_analysis(ticker: str, show_sources: bool = False):
     """
@@ -76,37 +76,64 @@ def run_quant_analysis(ticker: str, show_sources: bool = False):
     
     return result
 
+def run_technical_analysis(repo: str):
+    """
+    Runs Technical Agent on a GitHub repo.
+    """
+    print(f"\nFetching GitHub data for {repo}...")
+    
+    result = technical_analyze(repo)
+    
+    if result["status"] == "failed":
+        print(f"Technical analysis failed: {result.get('error', 'Unknown error')}")
+        return result
+    
+    print(f"\n{'='*50}")
+    print(f"TECHNICAL ANALYSIS: {repo}")
+    print(f"{'='*50}")
+    print(f"Total Commits: {result['metrics']['total_commits']}")
+    print(f"Commit Frequency: {result['metrics']['commit_frequency']}/week")
+    print(f"Contributors: {result['metrics']['contributor_count']}")
+    print(f"Open Issues: {result['metrics']['open_issues']}")
+    print(f"Days Since Commit: {result['metrics']['days_since_commit']}")
+    print(f"Health Score: {result['metrics']['health_score']}")
+    print(f"Confidence: {result['confidence']}")
+    print(f"{'='*50}")
+    
+    return result
+
 
 def main():
     parser = argparse.ArgumentParser(description="AIRS - Autonomous Investment Research System")
-    parser.add_argument("--entity", type=str, required=True, help="Entity to analyze, e.g. 'AAPL'")
+    parser.add_argument("--entity", type=str, help="Entity to analyze, e.g. 'AAPL'")
+    parser.add_argument("--repo", type=str, help="GitHub repo to analyze, e.g. 'bitcoin/bitcoin'")
     parser.add_argument("--period", type=str, default="3mo", help="Data period: 1mo, 3mo, 6mo, 1y")
     parser.add_argument("--quant-only", action="store_true", help="Run only Quant Agent")
+    parser.add_argument("--technical-only", action="store_true", help="Run only Technical Agent")
     parser.add_argument("--show-sources", action="store_true", help="Show source tracking for each metric")
     args = parser.parse_args()
+    
+    # Validate: need entity for quant, need repo for technical
+    if not args.technical_only and not args.entity:
+        parser.error("--entity is required unless using --technical-only")
+    
+    if args.technical_only and not args.repo:
+        parser.error("--repo is required when using --technical-only")
     
     # Initialize database
     init_db()
     
-    # Check if entity exists, create if not
-    entity = get_entity(args.entity)
-    if not entity:
-        print(f"Creating new entity: {args.entity}")
-        entity_id = save_entity(
-            name=args.entity,
-            ticker=args.entity,
-            type_="stock"
-        )
-    else:
-        entity_id = entity["id"]
-        print(f"Found existing entity: {args.entity} (ID: {entity_id})")
-    
-    # Run analysis based on flags
-    if args.quant_only:
+    # Run based on flags
+    if args.technical_only:
+        run_technical_analysis(args.repo)
+    elif args.quant_only:
         run_quant_analysis(args.entity, show_sources=args.show_sources)
+    elif args.repo:
+        # Run both
+        run_quant_analysis(args.entity, show_sources=args.show_sources)
+        run_technical_analysis(args.repo)
     else:
-        print("Full pipeline coming in later days. Use --quant-only for now.")
-        print(f"To run Quant Agent: python main.py --entity {args.entity} --quant-only")
+        run_quant_analysis(args.entity, show_sources=args.show_sources)
     
     return 0
 
