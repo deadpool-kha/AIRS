@@ -314,3 +314,48 @@ Rejected alternatives:
 - Delete resolved findings (not auditable)
 
 Revisit if: Need to purge old findings for performance
+
+---
+
+# Decision 013
+
+## Use requests library instead of PyGithub for GitHub API
+
+Date: 2026-07-21
+
+Decision:
+Use raw `requests` calls to GitHub REST API instead of PyGithub library.
+
+Reason:
+- PyGithub adds abstraction that hides the API structure
+- Using requests directly teaches how REST APIs work
+- Easier to debug (see raw JSON, understand status codes)
+- Fewer dependencies (requests is already in requirements.txt)
+
+Rejected alternatives:
+- PyGithub (hides learning opportunity, extra dependency)
+- GraphQL API (more complex, overkill for MVP)
+
+Revisit if: Need complex pagination, authentication, or enterprise features
+
+---
+
+# Decision 014
+
+## Use unauthenticated GitHub API for MVP
+
+Date: 2026-07-21
+
+Decision:
+No GitHub token required for basic functionality.
+
+Reason:
+- 60 requests/hour is enough for demo and testing
+- Zero setup for users (no token to configure)
+- Can add token later for higher limits
+
+Rejected alternatives:
+- Require token upfront (friction for new users)
+- Use authenticated calls always (unnecessary for MVP)
+
+Revisit if: Users hit rate limits regularly

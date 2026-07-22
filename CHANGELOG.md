@@ -106,3 +106,28 @@
 - #2: Create database foundation
 - #3: Build first market data collector
 - #4: Implement Quant Agent
+
+## [0.3.2] - 2026-07-21
+
+### Added
+- Technical Agent for GitHub ecosystem analysis
+  - Fetches commits, repo metadata, contributors from GitHub REST API
+  - Calculates commit frequency (commits per week)
+  - Calculates days since last commit
+  - Composite health score (0-1) based on 4 factors
+  - Graceful handling of rate limits and missing data
+- Combined mode: run Quant + Technical together
+- `--technical-only` CLI flag
+- `--repo` argument for GitHub repository input
+
+### Changed
+- `main.py`: argparse refactored — `--entity` not required when using `--technical-only`
+- `agents/technical.py`: New agent module
+
+### Technical Details
+- Uses `requests` library directly instead of PyGithub
+- Unauthenticated API calls (60/hr limit)
+- JSON response parsing with error handling
+
+### Closed Issues
+- #5: Implement Technical Agent

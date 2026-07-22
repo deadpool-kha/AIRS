@@ -145,3 +145,27 @@ Pattern:
 This builds relationships and shows professional maturity.
 
 Source: GitHub Issue #13, external contributor feedback
+
+---
+
+## 2026-07-21: API Discovery Method
+
+Learned:
+How to figure out what goes inside a function when you don't know the API.
+
+Pattern:
+1. Google the API documentation
+2. Test the endpoint in browser (raw JSON)
+3. Explore in interactive Python (type(), keys(), print())
+4. Then write the function
+
+Example: GitHub API
+- Docs: docs.github.com/en/rest/commits/commits
+- Browser test: https://api.github.com/repos/bitcoin/bitcoin/commits
+- Python explore: response.json()[0]['commit']['message']
+- Then build: get_commits(), get_repo_info(), etc.
+
+Key insight:
+Nobody memorizes APIs. Professionals discover them. The skill is exploration, not memorization.
+
+Source: Personal experience, guided by senior dev mentor
