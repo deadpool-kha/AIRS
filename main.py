@@ -7,15 +7,20 @@ Usage:
     python main.py --entity "AAPL"
     python main.py --entity "AAPL" --quant-only
     python main.py --entity "AAPL" --quant-only --show-sources
+    python main.py --entity "AAPL" --repo bitcoin/bitcoin --hypotheses
 """
 
 import argparse
 import pandas as pd
 
+from agents.risk import RiskAgent
 from data.db import init_db, save_market_data, get_market_data, save_entity, get_entity
 from data.fetcher import fetch_with_retry
 from agents.quant import analyze as quant_analyze
 from agents.technical import analyze as technical_analyze
+from reports.hypothesis import generate_hypotheses, format_hypotheses
+from agents.business import BusinessAgent
+
 
 def run_quant_analysis(ticker: str, show_sources: bool = False):
     """
@@ -76,6 +81,7 @@ def run_quant_analysis(ticker: str, show_sources: bool = False):
     
     return result
 
+
 def run_technical_analysis(repo: str):
     """
     Runs Technical Agent on a GitHub repo.
@@ -102,8 +108,104 @@ def run_technical_analysis(repo: str):
     
     return result
 
+def run_business_analysis(entity: str, ticker: str = None):
+    """
+    Runs Business Agent for news analysis.
+    """
+    print(f"\nFetching business news for {entity}...")
+    
+    business_agent = BusinessAgent()
+    
+    try:
+        result = business_agent.analyze(entity=entity, ticker=ticker)
+        
+        print(f"\n{'='*50}")
+        print(f"BUSINESS ANALYSIS: {entity}")
+        print(f"{'='*50}")
+        print(f"Summary: {result['summary'][:200]}...")
+        print(f"Signals: {result['metrics']['signal_count']} found")
+        print(f"  Positive: {result['metrics']['positive_signals']}")
+        print(f"  Negative: {result['metrics']['negative_signals']}")
+        print(f"Catalysts: {result['metrics']['catalyst_count']}")
+        print(f"Risks: {result['metrics']['risk_count']}")
+        print(f"Confidence: {result['confidence']}")
+        print(f"Status: {result['status']}")
+        print(f"{'='*50}")
+        
+        if result['status'] == 'complete':
+            print("\n  Top Signals:")
+            for s in result['signals'][:5]:
+                print(f"    [{s['type'].upper()}] {s['category']}: {s['description']}")
+            
+            if result['catalysts']:
+                print("\n  Catalysts:")
+                for c in result['catalysts'][:3]:
+                    print(f"    → {c}")
+            
+            if result['risks']:
+                print("\n  Risks:")
+                for r in result['risks'][:3]:
+                    print(f"    ⚠ {r}")
+        
+        return result
+        
+    except ConnectionError as e:
+        print(f"⚠️  Business Agent skipped: {e}")
+        print("     (Start Ollama with: ollama serve)")
+        return {
+            "agent": "business",
+            "entity": entity,
+            "status": "failed",
+            "error": str(e),
+            "confidence": 0.0,
+        }
+    except Exception as e:
+        print(f"⚠️  Business Agent error: {e}")
+        return {
+            "agent": "business",
+            "entity": entity,
+            "status": "failed",
+            "error": str(e),
+            "confidence": 0.0,
+        }
+
+
+def run_risk_analysis(entity: str, agent_outputs: dict):
+    """
+    Runs Risk Agent on combined agent outputs.
+    """
+    print(f"\nAnalyzing risks for {entity}...")
+    
+    risk_agent = RiskAgent()
+    result = risk_agent.analyze(entity=entity, agent_outputs=agent_outputs)
+    
+    print(f"\n{'='*50}")
+    print(f"RISK ANALYSIS: {entity}")
+    print(f"{'='*50}")
+    print(f"Overall Risk: {result['metrics']['overall_risk'].upper()}")
+    print(f"Risks Found: {result['metrics']['risk_count']}")
+    print(f"Warnings: {result['metrics']['warning_count']}")
+    print(f"High Severity: {result['metrics']['high_severity_count']}")
+    print(f"Confidence: {result['confidence']}")
+    print(f"{'='*50}")
+    
+    if result['risks']:
+        print("\n  🚨 RISKS:")
+        for r in result['risks']:
+            icon = "🔴" if r['severity'] == 'high' else "🟡"
+            print(f"    {icon} [{r['category'].upper()}] {r['description']}")
+            print(f"       Source: {r['source']}")
+    
+    if result['warnings']:
+        print("\n  ⚠️  WARNINGS:")
+        for w in result['warnings']:
+            print(f"    🟡 [{w['category'].upper()}] {w['description']}")
+            print(f"       Source: {w['source']}")
+    
+    return result
 
 def main():
+    
     parser = argparse.ArgumentParser(description="AIRS - Autonomous Investment Research System")
     parser.add_argument("--entity", type=str, help="Entity to analyze, e.g. 'AAPL'")
     parser.add_argument("--repo", type=str, help="GitHub repo to analyze, e.g. 'bitcoin/bitcoin'")
@@ -111,6 +213,10 @@ def main():
     parser.add_argument("--quant-only", action="store_true", help="Run only Quant Agent")
     parser.add_argument("--technical-only", action="store_true", help="Run only Technical Agent")
     parser.add_argument("--show-sources", action="store_true", help="Show source tracking for each metric")
+    parser.add_argument("--hypotheses", action="store_true", help="Generate bull/bear/base hypotheses from agent outputs")
+    parser.add_argument("--business-only", action="store_true", help="Run only Business Agent")
+    parser.add_argument("--ticker", type=str, help="Stock/crypto ticker for better news matching")
+    parser.add_argument("--risk-only", action="store_true", help="Run only Risk Agent (requires other agent outputs)")
     args = parser.parse_args()
     
     # Validate: need entity for quant, need repo for technical
@@ -120,6 +226,14 @@ def main():
     if args.technical_only and not args.repo:
         parser.error("--repo is required when using --technical-only")
     
+    # Hypotheses mode requires both entity and repo
+    if args.hypotheses and (not args.entity or not args.repo):
+        parser.error("--hypotheses requires both --entity and --repo")
+    
+    # Risk-only needs other agents first
+    if args.risk_only:
+        parser.error("--risk-only requires running other agents first. Use --hypotheses instead.")
+    
     # Initialize database
     init_db()
     
@@ -128,8 +242,40 @@ def main():
         run_technical_analysis(args.repo)
     elif args.quant_only:
         run_quant_analysis(args.entity, show_sources=args.show_sources)
+    elif args.business_only:
+        if not args.entity:
+            parser.error("--entity is required when using --business-only")
+        run_business_analysis(args.entity, ticker=args.ticker)
+    elif args.hypotheses:
+        # Run all agents and generate hypotheses
+        quant_result = run_quant_analysis(args.entity, show_sources=args.show_sources)
+        technical_result = run_technical_analysis(args.repo)
+        business_result = run_business_analysis(args.entity, ticker=args.ticker)
+        
+        # Build agent outputs for risk analysis
+        full_outputs = {
+            "quant": quant_result,
+            "technical": technical_result,
+            "business": business_result,
+        }
+        
+        # Run Risk Agent
+        risk_result = run_risk_analysis(args.entity, full_outputs)
+        
+        # Build agent outputs dict for hypothesis engine
+        agent_outputs = {
+            "quant": quant_result,
+            "technical": technical_result,
+            "business": business_result,
+            "risk": risk_result,
+        }
+        
+        # Generate and display hypotheses
+        hypotheses = generate_hypotheses(args.entity, agent_outputs)
+        print(format_hypotheses(hypotheses))
+        
     elif args.repo:
-        # Run both
+        # Run both (without hypotheses)
         run_quant_analysis(args.entity, show_sources=args.show_sources)
         run_technical_analysis(args.repo)
     else:

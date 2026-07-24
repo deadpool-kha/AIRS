@@ -131,3 +131,54 @@
 
 ### Closed Issues
 - #5: Implement Technical Agent
+
+---
+
+## [0.3.3] - 2026-07-23
+
+### Added
+- Business Agent (`agents/business.py`) — Issue #6
+  - RSS news fetching (Google News, CoinTelegraph for crypto)
+  - Ollama LLM summarization (qwen2.5:7b)
+  - Structured signal extraction (positive/negative/neutral, category, description)
+  - Catalyst and risk identification
+  - Auditable confidence with 4 components (article count, signal richness, recency, source diversity)
+  - `--business-only` CLI flag
+  - `--ticker` argument for better news matching
+- Risk Agent (`agents/risk.py`) — Issue #7
+  - Rules-based downside analysis (no LLM, deterministic)
+  - Cross-agent contradiction detection (e.g., strong quant + weak technical)
+  - Blind spot detection (all-positive signal warning)
+  - Severity classification (high/medium)
+  - `--risk-only` CLI flag (redirects to --hypotheses)
+- Hypothesis Competition Engine (`reports/hypothesis.py`) — Issue #10 (partial)
+  - Bull/bear/base case generation from agent outputs
+  - Evidence collection per hypothesis
+  - Probability normalization with 5% minimum floor (DDScore #13 compliance)
+  - `--hypotheses` CLI flag integration
+- `utils/ollama_client.py` — Ollama API wrapper with retry logic
+
+### Changed
+- `main.py`: Refactored to support 4 agents + hypothesis mode
+- `main.py`: Added `--business-only`, `--ticker`, `--hypotheses`, `--risk-only` flags
+- Hypothesis engine now consumes Business Agent and Risk Agent outputs
+
+### Technical Details
+- Business Agent: 2 LLM calls per run (summarize + extract), ~60-90s on GTX 1060
+- Risk Agent: Pure Python, &lt;1s execution
+- Ollama timeout: 60s default, exponential backoff retry (1s, 2s, 4s)
+
+### Closed Issues
+- #6: Implement Business Agent
+- #7: Implement Risk Agent
+
+### Decisions
+- Business Agent uses RSS + Ollama (local, $0 cost) — aligns with Decision #002
+- Risk Agent is rules-based (no LLM) — aligns with architecture principle: deterministic analysis without LLM dependency
+- Hypothesis minimum probability floor (5%) — DDScore #13 feedback implementation
+
+### Verified
+- AAPL: Full pipeline runs end-to-end (Quant → Technical → Business → Risk → Hypotheses)
+- NVIDIA: Business Agent produces structured signals, catalysts, risks
+- apple/swift: Technical Agent health score 0.7, commit frequency 350/week
+- Hypothesis output: Bull 41% / Bear 18% / Base 41% for AAPL (with Risk Agent input)

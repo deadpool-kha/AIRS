@@ -169,3 +169,44 @@ Key insight:
 Nobody memorizes APIs. Professionals discover them. The skill is exploration, not memorization.
 
 Source: Personal experience, guided by senior dev mentor
+
+---
+
+## 2026-07-23: Building Business and Risk Agents
+
+Learned:
+
+Business Agent design:
+- RSS is the simplest news source for MVP (no API keys, no scraping)
+- Ollama qwen2.5:7b on GTX 1060 takes 60-90s for 2 prompts
+- JSON extraction from LLM requires cleanup (strip markdown, handle parse errors)
+- Graceful fallback when Ollama unavailable is critical for UX
+
+Risk Agent design:
+- Rules-based analysis is faster and more transparent than LLM for risk
+- Cross-agent contradiction detection adds real value (e.g., price up but ecosystem down)
+- Blind spot detection (all-positive warning) prevents confirmation bias
+- Severity classification makes risks actionable
+
+Hypothesis engine refinement:
+- 5% minimum floor prevents 0% probabilities (DDScore #13)
+- Risk Agent input dramatically improves bear case realism (5% → 18% for AAPL)
+- Evidence must be shared across hypotheses, not siloed
+
+Source: Personal experience building agents #6, #7
+
+---
+
+## 2026-07-23: Ollama Performance on Consumer Hardware
+
+Learned:
+
+- qwen2.5:7b (4.7 GB) fits in GTX 1060 6GB but runs slowly
+- Exponential backoff retry (1s, 2s, 4s) handles timeouts gracefully
+- num_predict=512 is generous; 256 would be faster with minimal quality loss
+- temperature=0.3 keeps outputs factual for analysis tasks
+- Ollama must be running (ollama serve) before script starts
+
+Source: Testing Business Agent on development machine
+
+---
