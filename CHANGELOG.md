@@ -235,3 +235,18 @@
 - AAPL: Bear case 25% with 3 risk evidence items
 - AAPL: LLM suggests "scenario analysis and stress testing"
 - AAPL: Quality score 0.875 (partial), should_iterate = True
+
+---
+
+## [0.3.5] - 2026-07-26
+
+### Fixed
+- `agents/quant.py`: Timezone bug — `pd.Timestamp.now()` failed on tz-naive dataframes
+  - Now handles both tz-aware and tz-naive datetime objects
+- `agents/technical.py`: Typo `status_status_code` → `status_code`
+  - Was causing AttributeError on API error responses
+  - Now returns clean 404 errors instead of crashing
+
+### Verified
+- ORCL: Quant Agent runs without timezone crash
+- ORCL: Technical Agent returns clean 404 instead of traceback

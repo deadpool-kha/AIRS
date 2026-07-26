@@ -27,7 +27,7 @@ def fetch_commits(owner: str, repo: str, per_page: int = 100) -> list:
     
     if response.status_code == 200:
         return response.json()
-    elif response.status_status_code == 403:
+    elif response.status_code == 403:
         raise ValueError("GitHub API rate limit exceeded. Try again later or use a token.")
     else:
         raise ValueError(f"GitHub API error: {response.status_code}")

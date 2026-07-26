@@ -212,7 +212,9 @@ def calculate_confidence(df, metrics):
     
     # Data freshness (20%)
     latest = df.index[-1]
-    days_old = (pd.Timestamp.now() - latest).days
+    now = pd.Timestamp.now().tz_localize(None)
+    latest = latest.tz_localize(None) if hasattr(latest, 'tz') and latest.tz is not None else latest
+    days_old = (now - latest).days
     if days_old <= 1:
         score += 0.20
         reasons.append("Data fresh: <=1 day old")
