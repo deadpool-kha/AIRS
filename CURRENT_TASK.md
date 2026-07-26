@@ -2,7 +2,7 @@
 
 # Current Development Status
 
-**Last Updated:** 2026-07-23
+**Last Updated:** 2026-07-26
 
 ---
 
@@ -13,82 +13,62 @@
 - ✅ Phase 3: Technical Agent (COMPLETE)
 - ✅ Phase 4: Business Agent (COMPLETE)
 - ✅ Phase 5: Risk Agent (COMPLETE)
+- ✅ Phase 6: Critic Agent (COMPLETE)
 
 ---
 
 # Completed
 
-- [x] **2026-07-19** — Defined project idea → Issue #1
-- [x] **2026-07-19** — Created documentation system → Issue #2
-- [x] **2026-07-20** — Project scaffold and folder structure → Issue #1
-- [x] **2026-07-20** — Database schema (SQLite, 4 tables) → Issue #2
-- [x] **2026-07-20** — Market data fetcher (yfinance with retry) → Issue #3
-- [x] **2026-07-20** — Quant Agent v1 (returns, volatility, momentum, drawdown, risk score, trend) → Issue #4
-- [x] **2026-07-21** — Quant Agent v2 (auditable confidence based on DDScore feedback)
-- [x] **2026-07-21** — Technical Agent (GitHub REST API: commits, contributors, repository metadata, health score) → Issue #5
-- [x] **2026-07-23** — Business Agent (news analysis using Ollama LLM) → Issue #6
-- [x] **2026-07-23** — Risk Agent (downside analysis and cross-agent contradiction detection) → Issue #7
-- [x] **2026-07-23** — Hypothesis Competition Engine (bull/bear/base scenarios with evidence) → Issue #10 *(partial)*
+- [x] 2026-07-19: Defined project idea → Issue #1
+- [x] 2026-07-19: Created documentation system → Issue #2
+- [x] 2026-07-20: Project scaffold and folder structure → Issue #1
+- [x] 2026-07-20: Database schema (SQLite, 4 tables) → Issue #2
+- [x] 2026-07-20: Market data fetcher (yfinance with retry) → Issue #3
+- [x] 2026-07-20: Quant Agent v1 (returns, volatility, momentum, drawdown, risk score, trend) → Issue #4
+- [x] 2026-07-21: Quant Agent v2 — auditable confidence based on DDScore feedback
+- [x] 2026-07-21: Technical Agent (GitHub API: commits, contributors, repo info, health score) → Issue #5
+- [x] 2026-07-23: Business Agent (news analysis with Ollama LLM) → Issue #6
+- [x] 2026-07-23: Risk Agent (downside analysis, cross-agent contradiction detection) → Issue #7
+- [x] 2026-07-26: Critic Agent (research quality evaluation, cross-agent validation, LLM-enhanced suggestions) → Issue #8
+- [x] 2026-07-26: Hypothesis Competition Engine v2 — Risk Agent feeds into bear case, Critic triggers iteration on HIGH risk
 
 ---
 
 # Active Issue
 
-### Issue #8 — Implement Critic Agent
-
-| Field | Value |
-|-------|-------|
-| **Status** | Not Started |
-| **Branch** | `feature/#8-critic-agent` *(create when ready)* |
+- **Issue #9:** Implement Loop Controller
+  - **Status:** Not Started
+  - **Branch:** `feature/#9-loop-controller` (when ready)
 
 ---
 
 # Next Tasks (Priority Order)
 
-| Priority | Issue | Task |
-|----------|-------|------|
-| 🔴 High | #8 | Implement Critic Agent (research quality evaluation) |
-| 🔴 High | #9 | Implement Loop Controller |
-| 🔴 High | #10 | Complete Report Generator (integrate Hypothesis Engine) |
-| 🟡 Medium | #11 | Ollama integration polish |
+1. **#9:** Implement Loop Controller (orchestrate agent iteration) — **Priority:** High
+2. **#10:** Complete Report Generator (integrate all agents, Critic findings, hypothesis engine) — **Priority:** High
+3. **#11:** Ollama integration polish — **Priority:** Medium
 
 ---
 
 # What Works Right Now
 
-## Quant Analysis
-
 ```bash
+# Quant analysis only
 python main.py --entity AAPL --quant-only
-```
 
-## Technical Analysis
-
-```bash
+# Technical analysis only
 python main.py --repo bitcoin/bitcoin --technical-only
-```
 
-## Business Analysis
-
-```bash
+# Business analysis only
 python main.py --entity NVIDIA --business-only
-```
 
-## Risk Analysis
-
-```bash
+# Risk analysis (requires other agents, use --hypotheses)
 python main.py --entity AAPL --repo apple/swift --hypotheses
-```
 
-## Full Pipeline
-
-```bash
+# Full pipeline with hypothesis generation and Critic evaluation
 python main.py --entity AAPL --repo apple/swift --ticker AAPL --hypotheses
-```
 
-## Source Tracking
-
-```bash
+# With source tracking
 python main.py --entity AAPL --quant-only --show-sources
 ```
 
@@ -96,15 +76,18 @@ python main.py --entity AAPL --quant-only --show-sources
 
 # Current Blockers
 
-**None** ✅
+- None
 
 ---
 
 # Notes
 
-- **Technical Agent** uses the GitHub REST API directly via the `requests` library.
-- GitHub API free tier supports **60 unauthenticated requests per hour**.
-- **Business Agent** uses **Ollama (`qwen2.5:7b`)** for summarization and business signal extraction.
-- **Risk Agent** is fully **rule-based** (no LLM) to provide deterministic and reproducible risk analysis.
-- **Hypothesis Competition Engine** applies a **5% minimum probability floor** to avoid zero-probability scenarios (DDScore #13).
-- GitHub API discovery process and implementation details are documented in **`LEARNING.md`**.
+- Technical Agent uses GitHub REST API directly (`requests` library)
+- Free tier: 60 requests/hour (unauthenticated)
+- Business Agent uses Ollama (`qwen2.5:7b`) for summarization and signal extraction
+- Risk Agent is rules-based (no LLM) for deterministic risk detection
+- Critic Agent evaluates all agent outputs, flags gaps, and suggests improvements
+- Critic triggers iteration when HIGH risk is found and iteration < 3
+- Hypothesis engine applies a 5% minimum floor (DDScore #13)
+- Risk Agent output feeds into bear case evidence (not just the minimum floor)
+- API discovery method documented in `LEARNING.md`

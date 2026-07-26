@@ -359,3 +359,56 @@ Rejected alternatives:
 - Use authenticated calls always (unnecessary for MVP)
 
 Revisit if: Users hit rate limits regularly
+
+---
+
+# Decision 018
+
+## Critic Agent uses rule-based evaluation with optional LLM enhancement
+
+Date: 2026-07-26
+
+Decision:
+Use deterministic rule checks as primary evaluation, with Ollama LLM for qualitative suggestions only when gaps are found.
+
+Reason:
+- Deterministic output: same inputs = same critique (reproducible)
+- Fast execution: rule-based &lt; 10ms vs LLM 30-60s
+- Transparent: every gap has a clear rule that triggered it
+- LLM adds value only when needed: suggestions for complex gaps
+- No dependency on Ollama availability for core functionality
+
+Rejected alternatives:
+- Pure LLM critique (slow, non-deterministic, opaque reasoning)
+- No LLM at all (misses qualitative insights for gap remediation)
+
+Revisit if: Need semantic claim verification or natural language contradiction detection
+
+---
+
+# Decision 019
+
+## Risk Agent output feeds into Hypothesis Engine bear case
+
+Date: 2026-07-26
+
+Decision:
+Individual risks and warnings from Risk Agent become evidence for the bear hypothesis.
+
+Reason:
+- DDScore #13: "Bull and bear sections must cite the same evidence register"
+- Risk Agent findings are real evidence, not just minimum floor padding
+- Prevents artificial 5% bear case with no supporting claims
+- Makes hypothesis probabilities reflect actual risk analysis
+
+Implementation:
+- HIGH overall risk: +15% to bear
+- Each individual risk: +5% to bear
+- Each warning: +3% to bear
+- Re-normalized after all evidence collected
+
+Rejected alternatives:
+- Keep bear case at minimum floor only (violates DDScore evidence register principle)
+- Let Risk Agent directly set probabilities (breaks separation of concerns)
+
+Revisit if: Need weighted risk severity scoring

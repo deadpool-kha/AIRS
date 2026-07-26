@@ -13,6 +13,7 @@ Usage:
 import argparse
 import pandas as pd
 
+from agents.critic import CriticAgent
 from agents.risk import RiskAgent
 from data.db import init_db, save_market_data, get_market_data, save_entity, get_entity
 from data.fetcher import fetch_with_retry
@@ -204,6 +205,42 @@ def run_risk_analysis(entity: str, agent_outputs: dict):
     
     return result
 
+def run_critic_analysis(entity: str, agent_outputs: dict, iteration: int = 1):
+    """
+    Runs Critic Agent on all agent outputs.
+    """
+    print(f"\nEvaluating research quality for {entity}...")
+    
+    critic = CriticAgent()
+    
+    # Use LLM-enhanced critique if possible
+    result = critic.evaluate_with_llm(entity, agent_outputs, iteration)
+    
+    print(f"\n{'='*50}")
+    print(f"CRITIC EVALUATION: {entity} (Iteration {iteration})")
+    print(f"{'='*50}")
+    print(f"Overall Quality: {result['overall_quality'].upper()}")
+    print(f"Quality Score: {result['metrics']['quality_score']}")
+    print(f"Gaps Found: {result['metrics']['gaps_count']}")
+    print(f"Should Iterate: {result['should_iterate']}")
+    print(f"{'='*50}")
+    
+    if result['gaps']:
+        print("\n  GAPS:")
+        for gap in result['gaps']:
+            print(f"    ❌ {gap}")
+    
+    if result['recommendations']:
+        print("\n  RECOMMENDATIONS:")
+        for rec in result['recommendations']:
+            print(f"    → {rec}")
+    
+    if result.get('llm_suggestions'):
+        print(f"\n  LLM SUGGESTIONS:")
+        print(f"    💡 {result['llm_suggestions']}")
+    
+    return result
+
 def main():
     
     parser = argparse.ArgumentParser(description="AIRS - Autonomous Investment Research System")
@@ -217,6 +254,7 @@ def main():
     parser.add_argument("--business-only", action="store_true", help="Run only Business Agent")
     parser.add_argument("--ticker", type=str, help="Stock/crypto ticker for better news matching")
     parser.add_argument("--risk-only", action="store_true", help="Run only Risk Agent (requires other agent outputs)")
+    parser.add_argument("--critic", action="store_true", help="Run Critic Agent evaluation")
     args = parser.parse_args()
     
     # Validate: need entity for quant, need repo for technical
@@ -247,30 +285,32 @@ def main():
             parser.error("--entity is required when using --business-only")
         run_business_analysis(args.entity, ticker=args.ticker)
     elif args.hypotheses:
-        # Run all agents and generate hypotheses
+        # Run all agents
         quant_result = run_quant_analysis(args.entity, show_sources=args.show_sources)
         technical_result = run_technical_analysis(args.repo)
         business_result = run_business_analysis(args.entity, ticker=args.ticker)
         
-        # Build agent outputs for risk analysis
         full_outputs = {
             "quant": quant_result,
             "technical": technical_result,
             "business": business_result,
         }
         
-        # Run Risk Agent
         risk_result = run_risk_analysis(args.entity, full_outputs)
+        full_outputs["risk"] = risk_result
         
-        # Build agent outputs dict for hypothesis engine
+        # Run Critic
+        critic_result = run_critic_analysis(args.entity, full_outputs, iteration=1)
+        
+        # Build agent outputs for hypothesis engine
         agent_outputs = {
             "quant": quant_result,
             "technical": technical_result,
             "business": business_result,
             "risk": risk_result,
+            "critic": critic_result,
         }
         
-        # Generate and display hypotheses
         hypotheses = generate_hypotheses(args.entity, agent_outputs)
         print(format_hypotheses(hypotheses))
         

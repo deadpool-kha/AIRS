@@ -182,3 +182,56 @@
 - NVIDIA: Business Agent produces structured signals, catalysts, risks
 - apple/swift: Technical Agent health score 0.7, commit frequency 350/week
 - Hypothesis output: Bull 41% / Bear 18% / Base 41% for AAPL (with Risk Agent input)
+
+
+---
+
+
+
+
+
+
+## [0.3.4] - 2026-07-26
+
+### Added
+- Critic Agent (`agents/critic.py`) — Issue #8
+  - Rule-based research quality evaluation across all 4 agents
+  - Cross-agent validation: confidence-risk mismatch detection
+  - NEW: Mandatory iteration trigger when Risk Agent flags HIGH risk
+  - NEW: Business signal bias detection (all-positive warning)
+  - LLM-enhanced suggestions via Ollama when gaps found
+  - `--critic` CLI flag (integrated into `--hypotheses` mode)
+  - Append-only findings (Decision #012 compliance)
+
+### Changed
+- `reports/hypothesis.py`: Risk Agent output now feeds into bear case evidence
+  - Individual risks add +5% probability each
+  - Warnings add +3% probability each
+  - HIGH overall risk flag adds +15% probability
+  - Bear case now reflects real risks (25% vs artificial 5% for AAPL)
+- `agents/critic.py`: Quality score calculation includes warnings metric
+- `main.py`: `--hypotheses` mode now runs Critic Agent before hypothesis generation
+
+### Fixed
+- Critic no longer reports "complete" when Risk Agent flags HIGH risk
+- Bear case no longer shows 5% minimum floor with empty evidence
+- Cross-agent gap detection now triggers `should_iterate = True`
+
+### Technical Details
+- Critic: 8 quality checks (quant, technical, business, risk, cross-agent, dimensions)
+- LLM suggestions: 30s timeout, skipped if rule-based already complete
+- Hypothesis re-normalization: floor applied, then re-normalized to sum 1.0
+
+### Closed Issues
+- #8: Implement Critic Agent
+
+### Decisions
+- Critic uses rule-based + optional LLM enhancement — aligns with architecture principle: deterministic base, LLM for reasoning only
+- HIGH risk mandates iteration — DDScore #13: "unknowns remain unknown" until investigated
+- Business bias warning — prevents confirmation bias in news analysis
+
+### Verified
+- AAPL: Critic flags `high_risk_not_mitigated`, triggers iteration
+- AAPL: Bear case 25% with 3 risk evidence items
+- AAPL: LLM suggests "scenario analysis and stress testing"
+- AAPL: Quality score 0.875 (partial), should_iterate = True

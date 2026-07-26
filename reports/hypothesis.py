@@ -97,6 +97,27 @@ def generate_hypotheses(entity: str, agent_outputs: dict) -> dict:
         bear.add_evidence("High-severity risks identified")
         bear.probability += 0.15
     
+    # === NEW: Risk Agent output feeds into bear case ===
+    risk_metrics = agent_outputs.get("risk", {}).get("metrics", {})
+    risk_level = risk_metrics.get("overall_risk", "low")
+    
+    if risk_level == "high":
+        bear.add_evidence("Risk Agent flagged HIGH overall risk")
+        bear.probability += 0.15
+    
+    # Add individual risks from Risk Agent
+    risk_list = agent_outputs.get("risk", {}).get("risks", [])
+    for r in risk_list:
+        bear.add_evidence(f"Risk: {r.get('description', 'Unknown risk')}")
+        bear.probability += 0.05
+    
+    # Add warnings from Risk Agent as weaker bear signals
+    warning_list = agent_outputs.get("risk", {}).get("warnings", [])
+    for w in warning_list:
+        bear.add_evidence(f"Warning: {w.get('description', 'Unknown warning')}")
+        bear.probability += 0.03
+    # === END NEW ===
+    
     # --- BASE CASE (neutral/moderate signals) ---
     if 0.3 < quant.get("risk_score", 0) < 0.5:
         base.add_evidence("Moderate risk profile")

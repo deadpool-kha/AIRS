@@ -210,3 +210,48 @@ Learned:
 Source: Testing Business Agent on development machine
 
 ---
+---
+
+## 2026-07-26: Building Critic Agent and Cross-Agent Integration
+
+Learned:
+
+Critic Agent design:
+- Rule-based evaluation is fast and transparent — every gap has a clear trigger
+- LLM enhancement adds value ONLY when gaps exist (skip if complete)
+- Cross-agent checks find contradictions humans miss (quant confident + risk high)
+- Mandatory iteration on HIGH risk prevents premature finalization
+
+Hypothesis engine refinement v2:
+- Minimum floor (5%) prevents 0% but is intellectually empty without evidence
+- Risk Agent output must feed into bear case to satisfy DDScore evidence register
+- Re-normalization after adding evidence keeps probabilities valid (sum to 1.0)
+- Bear case jumped from 5% → 25% for AAPL once risks were included
+
+Integration complexity:
+- 5 agents now run in sequence: Quant → Technical → Business → Risk → Critic → Hypotheses
+- Each agent depends on previous outputs — order matters
+- Critic output affects loop behavior (iterate vs complete)
+- Debugging requires tracing data flow across 5 files
+
+Source: Personal experience building agents #8 and integrating cross-agent validation
+
+---
+
+## 2026-07-26: When "Working" Is Not Enough
+
+Learned:
+
+First Critic implementation reported quality 1.0 (perfect) while Risk said HIGH.
+- Code was "working" but logically wrong
+- The bug: Critic checked "did agents run?" not "did agents find problems?"
+- Fixed by adding cross-agent checks: high risk + low iteration = gap
+
+Hypothesis engine showed 5% bear with NO evidence.
+- Minimum floor was hiding missing integration
+- Fixed by wiring Risk Agent output into bear case
+- Now bear case has real evidence and realistic probability
+
+Lesson: Test outputs for semantic correctness, not just absence of errors.
+
+Source: Debugging Critic and Hypothesis integration

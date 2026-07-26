@@ -27,3 +27,6 @@ test_*.py
 *_test.py
 abc.py
 todo_app.py
+
+#Context
+CONTEXT.md
