@@ -131,27 +131,43 @@ Base Case (38%)
 # Architecture
 
 ```text
-                    User Request
-                         │
-                         ▼
-          Research Controller (Loop Engine)
-                         │
-                         ▼
-                  Research Agents
-        ┌─────────┬─────────┬─────────┐
-        ▼         ▼         ▼         ▼
-     Quant    Technical  Business   Risk
-        └─────────┬─────────┬─────────┘
-                  ▼
-            Critic Agent
-                  │
-      Iterate? (Maximum 3 loops)
-                  │
-                  ▼
-      Hypothesis Competition Engine
-                  │
-                  ▼
-      Investment Research Report
+                    ## Architecture
+
+
+                         User Request
+                              │
+                              ▼
+              Research Controller (Loop Engine)
+                              │
+         ┌────────────────────┼────────────────────┐
+         │                    │                    │
+         ▼                    ▼                    ▼
+       Quant              Technical            Business
+         │                    │                    │
+         └────────────────────┼────────────────────┘
+                              │
+                              ▼
+                            Risk
+                              │
+                              ▼
+                           Critic
+                              │
+                    ┌─────────┴─────────┐
+                    ▼                   ▼
+              Gaps Found?           No Gaps / Max 3
+                    │                   │
+                   YES                  │
+                    │                   ▼
+                    ▼            Hypothesis Engine
+             Targeted Re-run            │
+                    │                   ▼
+                    │             Final Report
+                    │
+                    └───────────────────┐
+                                        │
+                    ◄───────────────────┘
+               Research Controller
+               (Next iteration, max 3)
 ```
 
 ---
