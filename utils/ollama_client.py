@@ -15,14 +15,14 @@ class OllamaClient:
     """Client for Ollama local LLM API."""
 
     DEFAULT_HOST = "http://localhost:11434"
-    DEFAULT_MODEL = "qwen2.5:7b"
+    DEFAULT_MODEL = "qwen3:4b"
 
     def __init__(self, host: str = None, model: str = None):
         self.host = host or self.DEFAULT_HOST
         self.model = model or self.DEFAULT_MODEL
         self.generate_url = f"{self.host}/api/generate"
 
-    def generate(self, prompt: str, model: str = None, timeout: int = 60) -> str:
+    def generate(self, prompt: str, model: str = None, timeout: int = 120) -> str:
         """
         Generate text from Ollama with retry.
 

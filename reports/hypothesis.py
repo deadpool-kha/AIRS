@@ -58,10 +58,19 @@ def generate_hypotheses(entity: str, agent_outputs: dict) -> dict:
     bear = Hypothesis("bear", f"{entity} is overvalued or faces significant risks")
     base = Hypothesis("base", f"{entity} is fairly valued with moderate growth")
     
-    # Extract data from agents
-    quant = agent_outputs.get("quant", {}).get("metrics", {})
-    technical = agent_outputs.get("technical", {}).get("metrics", {})
+        # Extract data from agents — only use if agent completed successfully
+    quant_status = agent_outputs.get("quant", {}).get("status", "failed")
+    technical_status = agent_outputs.get("technical", {}).get("status", "failed")
+    business_status = agent_outputs.get("business", {}).get("status", "failed")
+    
+    
+    
+    quant = agent_outputs.get("quant", {}).get("metrics", {}) if quant_status == "complete" else {}
+    technical = agent_outputs.get("technical", {}).get("metrics", {}) if technical_status in ["complete", "partial"] else {}
+    business = agent_outputs.get("business", {}) if business_status in ["complete", "partial"] else {}
     risk = agent_outputs.get("risk", {}).get("risks", [])
+    
+
     
     # --- BULL CASE EVIDENCE ---
     if quant.get("trend") == "strong_uptrend":
@@ -80,16 +89,16 @@ def generate_hypotheses(entity: str, agent_outputs: dict) -> dict:
         bull.add_evidence(f"High development activity: {technical['commit_frequency']}/week")
         bull.probability += 0.10
     
-    # --- BEAR CASE EVIDENCE ---
-    if quant.get("risk_score", 0) > 0.5:
+       # --- BEAR CASE EVIDENCE ---
+    if quant and quant.get("risk_score", 0) > 0.5:
         bear.add_evidence(f"High risk score: {quant['risk_score']}")
         bear.probability += 0.15
     
-    if quant.get("drawdown", {}).get("max_drawdown", 0) > 0.15:
+    if quant and quant.get("drawdown", {}).get("max_drawdown", 0) > 0.15:
         bear.add_evidence(f"Significant drawdown: {quant['drawdown']['max_drawdown']:.1%}")
         bear.probability += 0.10
     
-    if technical.get("days_since_commit", 999) > 30:
+    if technical and technical.get("days_since_commit", 999) > 30:
         bear.add_evidence("Stale development activity")
         bear.probability += 0.10
     
@@ -118,16 +127,16 @@ def generate_hypotheses(entity: str, agent_outputs: dict) -> dict:
         bear.probability += 0.03
     # === END NEW ===
     
-    # --- BASE CASE (neutral/moderate signals) ---
-    if 0.3 < quant.get("risk_score", 0) < 0.5:
+        # --- BASE CASE (neutral/moderate signals) ---
+    if quant and 0.3 < quant.get("risk_score", 0) < 0.5:
         base.add_evidence("Moderate risk profile")
         base.probability += 0.15
     
-    if 0.5 < technical.get("health_score", 0) < 0.8:
+    if technical and 0.5 < technical.get("health_score", 0) < 0.8:
         base.add_evidence("Moderate ecosystem health")
         base.probability += 0.10
     
-    if quant.get("volatility", 0) < 0.3:
+    if quant and quant.get("volatility", 0) < 0.3:
         base.add_evidence("Stable volatility")
         base.probability += 0.10
     

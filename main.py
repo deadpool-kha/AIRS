@@ -33,6 +33,19 @@ def run_quant_analysis(ticker: str, show_sources: bool = False):
     
     if not rows:
         print(f"No data found for {ticker}. Fetching from Yahoo Finance...")
+        try:
+            df = fetch_with_retry(ticker, period="3mo")
+            save_market_data(ticker, df)
+        except Exception as e:
+            print(f"⚠️  Quant Agent failed: {e}")
+            return {
+                "agent": "quant",
+                "entity": ticker,
+                "status": "failed",
+                "error": str(e),
+                "confidence": 0.0,
+                "metrics": {},
+            }
         df = fetch_with_retry(ticker, period="3mo")
         save_market_data(ticker, df)
     else:
@@ -93,6 +106,8 @@ def run_technical_analysis(repo: str):
     
     if result["status"] == "failed":
         print(f"Technical analysis failed: {result.get('error', 'Unknown error')}")
+        print("     (This is normal for private repos or non-GitHub companies)")
+
         return result
     
     print(f"\n{'='*50}")
@@ -264,9 +279,9 @@ def main():
     if args.technical_only and not args.repo:
         parser.error("--repo is required when using --technical-only")
     
-    # Hypotheses mode requires both entity and repo
-    if args.hypotheses and (not args.entity or not args.repo):
-        parser.error("--hypotheses requires both --entity and --repo")
+    # Hypotheses mode requires entity, repo is optional for private repos
+    if args.hypotheses and not args.entity :
+        parser.error("--hypotheses requires both --entity")
     
     # Risk-only needs other agents first
     if args.risk_only:
@@ -287,7 +302,19 @@ def main():
     elif args.hypotheses:
         # Run all agents
         quant_result = run_quant_analysis(args.entity, show_sources=args.show_sources)
-        technical_result = run_technical_analysis(args.repo)
+        # Technical Agent: only if repo provided
+        if args.repo:
+            technical_result = run_technical_analysis(args.repo)
+        else:
+            print("\n⚠️  No --repo provided. Skipping Technical Agent.")
+            technical_result = {
+                "agent": "technical",
+                "repo": None,
+                "status": "skipped",
+                "error": "No repository provided",
+                "confidence": 0.0,
+                "metrics": {},
+            }
         business_result = run_business_analysis(args.entity, ticker=args.ticker)
         
         full_outputs = {
