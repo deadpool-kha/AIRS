@@ -128,7 +128,7 @@ Base Case (38%)
 
 ---
 
-# Architecture
+## Architecture
 
 ```text
                     ## Architecture
