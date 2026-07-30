@@ -255,3 +255,121 @@ Hypothesis engine showed 5% bear with NO evidence.
 Lesson: Test outputs for semantic correctness, not just absence of errors.
 
 Source: Debugging Critic and Hypothesis integration
+
+---
+
+## 2026-07-30: Building the Loop Controller
+
+Learned:
+
+Meaningful iteration requires changing inputs.
+
+Simply re-running the same agents with the same parameters does not improve research quality—it only repeats the same computation.
+
+Application to AIRS:
+- Loop Controller only re-runs agents whose inputs can change
+- Quant Agent benefits from iterative refinement
+- Business and Technical Agents remain single-shot unless their inputs change
+- Future iterations should mutate search breadth, lookback period, or analysis depth
+
+Source: Personal experience implementing Issue #9
+
+---
+
+## 2026-07-30: RSS Is a Live Feed, Not a Historical Database
+
+Learned:
+
+RSS feeds only expose current articles.
+
+They cannot answer questions such as "show me news from six months ago."
+
+Historical news requires:
+- paid news APIs
+- archived datasets
+- web scraping archives
+
+Application to AIRS:
+- Business Agent performs a single analysis over current news
+- Later iterations should not repeatedly analyze identical RSS data
+
+Source: Research while implementing Business Agent iteration
+
+---
+
+## 2026-07-30: Constrain Local LLMs to Existing Evidence
+
+Learned:
+
+Small local LLMs tend to hallucinate when asked to "find" new insights from unchanged data.
+
+Better prompts ask the model to evaluate existing evidence rather than invent new evidence.
+
+Examples:
+- "Which signal has the weakest supporting evidence?"
+- "Which conclusion has the lowest confidence?"
+
+Avoid prompts such as:
+- "Find hidden contradictions."
+- "Discover additional risks."
+
+Application to AIRS:
+- Business Agent remains evidence-driven rather than speculative
+- Future prompt improvements should strengthen reasoning without introducing new unsupported claims
+
+Source: Testing Qwen2.5:7b during Loop Controller development
+
+---
+
+## 2026-07-30: Python Lambda Capture in Loops
+
+Learned:
+
+Lambdas created inside loops capture variables by reference, not by value.
+
+Incorrect:
+
+```python
+for name in agents:
+    runners[name] = lambda: run(name)
+```
+
+Every lambda ends up using the final value of `name`.
+
+Correct:
+
+```python
+for name in agents:
+    runners[name] = lambda n=name: run(n)
+```
+
+Using a default argument captures the current value for each lambda.
+
+Application to AIRS:
+- Prevented subtle bugs while building the Loop Controller's agent dispatch table
+
+Source: Debugging early Loop Controller prototypes
+
+---
+
+## 2026-07-30: Database Constraints Document Valid State
+
+Learned:
+
+SQLite `CHECK` constraints improve both data integrity and documentation.
+
+Example:
+
+```sql
+CHECK(status IN ('running', 'completed', 'failed'))
+```
+
+Benefits:
+- prevents invalid values
+- catches programming mistakes early
+- documents allowed states directly in the schema
+
+Application to AIRS:
+- Used for execution state validation in the `loop_states` table
+
+Source: SQLite documentation and implementation experience

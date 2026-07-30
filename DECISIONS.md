@@ -412,3 +412,137 @@ Rejected alternatives:
 - Let Risk Agent directly set probabilities (breaks separation of concerns)
 
 Revisit if: Need weighted risk severity scoring
+
+---
+
+# Decision 020
+
+## Use adaptive re-runs instead of re-running every agent
+
+Date: 2026-07-30
+
+Decision:
+
+Only re-run agents whose inputs can meaningfully change between iterations.
+
+Currently:
+
+- Quant Agent is re-run because analysis parameters can change.
+- Business Agent is single-shot unless its search parameters change.
+- Technical Agent is single-shot unless the repository or search scope changes.
+
+Reason:
+
+Running every agent on every iteration wastes computation.
+
+Business Agent processes the same RSS articles and Technical Agent reads the same GitHub repository state, so repeated execution provides little value.
+
+Adaptive execution:
+
+- reduces Ollama token usage
+- reduces API calls
+- shortens iteration time
+- prepares the system for future adaptive planning
+
+Rejected alternatives:
+
+- Re-run every agent every iteration (wastes compute)
+- Never re-run any agent (prevents iterative improvement)
+
+Revisit if: Business or Technical Agent inputs become adaptive between iterations.
+
+---
+
+# Decision 021
+
+## Represent intentionally omitted agents as "skipped"
+
+Date: 2026-07-30
+
+Decision:
+
+Agents that are intentionally omitted because required CLI arguments are missing return a status of `"skipped"` instead of an error.
+
+The Critic Agent treats skipped agents as neutral rather than missing data.
+
+Reason:
+
+There is an important difference between:
+
+- an agent that was intentionally not executed
+- an agent that attempted execution and failed
+
+Representing both cases as failures caused the Critic Agent to repeatedly report false research gaps.
+
+Rejected alternatives:
+
+- Return an error (breaks partial workflows)
+- Return empty results (ambiguous meaning)
+- Ignore missing agents entirely (loses execution state)
+
+Revisit if: Additional execution states (e.g. deferred, cached) are introduced.
+
+---
+
+# Decision 022
+
+## Do not deepen LLM reasoning on unchanged inputs
+
+Date: 2026-07-30
+
+Decision:
+
+Do not repeatedly ask the LLM to generate new conclusions from identical source data.
+
+The LLM may analyze existing extracted signals but should not attempt to discover new facts when the underlying inputs have not changed.
+
+Reason:
+
+Repeated prompting over identical RSS articles increases hallucination risk while providing little additional insight.
+
+Meaningful improvement should come from:
+
+- better input data
+- improved prompts
+- richer evidence
+
+not repeated reasoning over static information.
+
+Rejected alternatives:
+
+- Re-run Ollama each iteration on identical RSS data (high cost, limited value)
+- Allow unrestricted iterative reasoning (higher hallucination risk)
+
+Revisit if: Business Agent gains access to new evidence or adaptive retrieval.
+
+---
+
+# Decision 023
+
+## Limit Critic-driven iteration to three passes
+
+Date: 2026-07-30
+
+Decision:
+
+Stop the research loop after a maximum of three iterations, even if high-risk findings remain unresolved.
+
+Reason:
+
+Current iterations cannot always resolve Critic feedback because several agents operate on static inputs.
+
+The maximum iteration limit:
+
+- prevents infinite loops
+- bounds execution time
+- limits API usage
+- limits LLM cost
+
+Until adaptive inputs are implemented, reaching iteration three may indicate that the system exhausted available evidence rather than fully resolving the identified risks.
+
+Rejected alternatives:
+
+- Continue until all gaps are resolved (can loop indefinitely)
+- Stop after one iteration (loses opportunity for refinement)
+
+Revisit if: Adaptive plan refinement allows agents to collect genuinely new evidence between iterations.

@@ -73,6 +73,8 @@ def init_db():
         )
     """)
     
+    
+    
     # Index: makes "get all AAPL data" queries fast.
     # Without it, SQLite scans every row. With 10k rows, that's slow.
     cursor.execute("""
@@ -111,7 +113,21 @@ def init_db():
             FOREIGN KEY (entity_id) REFERENCES entities(id)
         )
     """)
-    
+    # --- loop_states table ---
+    # Tracks overall loop execution for Issue #9.
+    # One row per entity run; aggregates iteration history.
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS loop_states (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            entity TEXT NOT NULL,
+            started_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            completed_at TIMESTAMP,
+            final_iteration INTEGER,
+            status TEXT CHECK(status IN ('running', 'completed', 'failed')),
+            critique_summary TEXT,
+            should_iterate_history TEXT
+        )
+    """)
     # --- reports table ---
     # Final output: the investment memo.
     cursor.execute("""

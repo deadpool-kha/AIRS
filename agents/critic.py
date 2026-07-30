@@ -49,18 +49,22 @@ class CriticAgent:
         business = agent_outputs.get("business", {})
         risk = agent_outputs.get("risk", {})
 
-        # QUANT CHECKS
-        if quant.get("status") != "complete":
+           # QUANT CHECKS
+        if quant.get("status") == "skipped":
+            pass  # Intentionally skipped (no ticker provided)
+        elif quant.get("status") != "complete":
             gaps.append("quant_incomplete")
             recommendations.append("Re-run Quant Agent with valid ticker")
         elif quant.get("confidence", 0) < 0.7:
             gaps.append("quant_low_confidence")
             recommendations.append("Expand data period or verify data source")
 
-        # TECHNICAL CHECKS
+            # TECHNICAL CHECKS
         if technical.get("status") == "failed":
             gaps.append("technical_failed")
             recommendations.append("Check GitHub repo name or API rate limits")
+        elif technical.get("status") == "skipped":
+            pass  # Intentionally skipped (no --repo provided)
         elif technical.get("metrics", {}).get("health_score", 0) == 0:
             gaps.append("technical_no_data")
             recommendations.append("Verify repository exists and is public")

@@ -13,7 +13,9 @@ Usage:
 import argparse
 import pandas as pd
 
+
 from agents.critic import CriticAgent
+from controller.loop import LoopController
 from agents.risk import RiskAgent
 from data.db import init_db, save_market_data, get_market_data, save_entity, get_entity
 from data.fetcher import fetch_with_retry
@@ -23,18 +25,17 @@ from reports.hypothesis import generate_hypotheses, format_hypotheses
 from agents.business import BusinessAgent
 
 
-def run_quant_analysis(ticker: str, show_sources: bool = False):
+def run_quant_analysis(ticker: str, show_sources: bool = False, period: str = "3mo", refresh: bool = False):
     """
     Fetches data and runs Quant Agent.
-    Demonstrates the full pipeline: fetch → save → analyze.
+    refresh=True forces a re-fetch even if cache exists (used in loop iterations).
     """
-    # Check if we have data in database
     rows = get_market_data(ticker, limit=100)
     
-    if not rows:
-        print(f"No data found for {ticker}. Fetching from Yahoo Finance...")
+    if not rows or refresh:
+        print(f"{'Refreshing' if refresh else 'No data found for'} {ticker}. Fetching from Yahoo Finance (period={period})...")
         try:
-            df = fetch_with_retry(ticker, period="3mo")
+            df = fetch_with_retry(ticker, period=period)
             save_market_data(ticker, df)
         except Exception as e:
             print(f"⚠️  Quant Agent failed: {e}")
@@ -46,21 +47,14 @@ def run_quant_analysis(ticker: str, show_sources: bool = False):
                 "confidence": 0.0,
                 "metrics": {},
             }
-        df = fetch_with_retry(ticker, period="3mo")
-        save_market_data(ticker, df)
     else:
         # Reconstruct DataFrame from database rows
         df = pd.DataFrame(rows)
         df["date"] = pd.to_datetime(df["date"])
         df = df.sort_values("date").set_index("date")
-        
-        # Rename columns to match yfinance format (capitalized)
         df = df.rename(columns={
-            "open": "Open",
-            "high": "High",
-            "low": "Low",
-            "close": "Close",
-            "volume": "Volume"
+            "open": "Open", "high": "High", "low": "Low",
+            "close": "Close", "volume": "Volume"
         })
         print(f"Using cached data: {len(df)} rows")
     
@@ -124,16 +118,18 @@ def run_technical_analysis(repo: str):
     
     return result
 
-def run_business_analysis(entity: str, ticker: str = None):
+def run_business_analysis(entity: str, ticker: str = None, broad_search: bool = False):
     """
     Runs Business Agent for news analysis.
     """
     print(f"\nFetching business news for {entity}...")
     
     business_agent = BusinessAgent()
+    # If broad_search, drop ticker to get more general news
+    actual_ticker = None if broad_search else ticker
     
     try:
-        result = business_agent.analyze(entity=entity, ticker=ticker)
+        result = business_agent.analyze(entity=entity, ticker=actual_ticker)
         
         print(f"\n{'='*50}")
         print(f"BUSINESS ANALYSIS: {entity}")
@@ -280,8 +276,8 @@ def main():
         parser.error("--repo is required when using --technical-only")
     
     # Hypotheses mode requires entity, repo is optional for private repos
-    if args.hypotheses and not args.entity :
-        parser.error("--hypotheses requires both --entity")
+    if args.hypotheses and not args.entity:
+        parser.error("--hypotheses requires --entity")
     
     # Risk-only needs other agents first
     if args.risk_only:
@@ -299,52 +295,48 @@ def main():
         if not args.entity:
             parser.error("--entity is required when using --business-only")
         run_business_analysis(args.entity, ticker=args.ticker)
+        
     elif args.hypotheses:
-        # Run all agents
-        quant_result = run_quant_analysis(args.entity, show_sources=args.show_sources)
-        # Technical Agent: only if repo provided
-        if args.repo:
-            technical_result = run_technical_analysis(args.repo)
+        # Build agent runners dynamically based on what the user provided
+        agent_runners = {}
+
+        # Quant: use explicit --ticker if given, otherwise fall back to --entity
+        quant_ticker = args.ticker or args.entity
+        if quant_ticker:
+            agent_runners['quant'] = lambda t=quant_ticker: run_quant_analysis(
+                t, show_sources=args.show_sources
+            )
         else:
-            print("\n⚠️  No --repo provided. Skipping Technical Agent.")
-            technical_result = {
-                "agent": "technical",
-                "repo": None,
-                "status": "skipped",
-                "error": "No repository provided",
-                "confidence": 0.0,
-                "metrics": {},
+            print("\n⚠️  No ticker available. Skipping Quant Agent.")
+            agent_runners['quant'] = lambda: {
+                "agent": "quant", "status": "skipped", "error": "No ticker provided",
+                "confidence": 0.0, "metrics": {},
             }
-        business_result = run_business_analysis(args.entity, ticker=args.ticker)
-        
-        full_outputs = {
-            "quant": quant_result,
-            "technical": technical_result,
-            "business": business_result,
+
+        # Technical: only if --repo provided
+        if args.repo:
+            agent_runners['technical'] = lambda r=args.repo: run_technical_analysis(r)
+        else:
+            print("\n⚠️  No --repo provided. Technical Agent will be skipped.")
+            agent_runners['technical'] = lambda: {
+                "agent": "technical", "status": "skipped", "error": "No repository provided",
+                "confidence": 0.0, "metrics": {},
+            }
+
+        # Business: always attempted
+        agent_runners['business'] = lambda: run_business_analysis(
+            args.entity, ticker=args.ticker
+        )
+
+        # Run the loop
+        controller = LoopController()
+        config = {
+            'hypotheses': True,
+            'show_sources': args.show_sources,
         }
+        results = controller.run(args.entity, agent_runners, config)
         
-        risk_result = run_risk_analysis(args.entity, full_outputs)
-        full_outputs["risk"] = risk_result
         
-        # Run Critic
-        critic_result = run_critic_analysis(args.entity, full_outputs, iteration=1)
-        
-        # Build agent outputs for hypothesis engine
-        agent_outputs = {
-            "quant": quant_result,
-            "technical": technical_result,
-            "business": business_result,
-            "risk": risk_result,
-            "critic": critic_result,
-        }
-        
-        hypotheses = generate_hypotheses(args.entity, agent_outputs)
-        print(format_hypotheses(hypotheses))
-        
-    elif args.repo:
-        # Run both (without hypotheses)
-        run_quant_analysis(args.entity, show_sources=args.show_sources)
-        run_technical_analysis(args.repo)
     else:
         run_quant_analysis(args.entity, show_sources=args.show_sources)
     

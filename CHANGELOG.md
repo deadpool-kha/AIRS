@@ -250,3 +250,31 @@
 ### Verified
 - ORCL: Quant Agent runs without timezone crash
 - ORCL: Technical Agent returns clean 404 instead of traceback
+
+## [2026-07-30] Issue #9: Loop Controller
+
+### Added
+- Created `controller/loop.py` with:
+  - Loop Controller supporting a maximum of **3 iterations**
+  - Database persistence
+  - Graceful agent skipping
+- Added `loop_states` table in `data/db.py` to track:
+  - Iteration history
+  - Critique summaries
+- Added `"skipped"` status handling in `agents/critic.py` for intentionally missing agents (no repository or no ticker).
+- `--hypotheses` no longer requires `--repo` and now supports partial agent sets (e.g., Quant + Business only).
+
+### Changed
+- Updated `main.py` so the `--hypotheses` workflow is orchestrated through `LoopController` instead of inline orchestration.
+- Updated `agents/critic.py` with iteration-aware evaluation and automatic `high_risk_not_mitigated` triggering.
+- Updated `main.py` validation so `--hypotheses` no longer enforces the `--repo` argument.
+
+### Fixed
+- Fixed an `AttributeError` that occurred when `--repo` was omitted in `--hypotheses` mode.
+- Fixed Critic incorrectly reporting intentionally skipped agents as `technical_no_data` gaps.
+- Fixed loop termination logic so execution correctly stops on iteration 3 when the Critic is satisfied (corrected max-iteration check ordering).
+
+### Known Issues
+- Business Agent iterations 2 and 3 reuse the same RSS feeds (live feeds only; no historical access).
+- Technical Agent iterations 2 and 3 reuse the same GitHub repository snapshot (repository state is unchanged).
+- Only the Quant Agent currently benefits from updated inputs between iterations.
