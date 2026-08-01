@@ -130,7 +130,7 @@ Improves:
 * evaluation
 * transparency
 
-Inspired by Andrew Ng's loop engineering concept.
+
 
 The loop: Plan → Research → Analyze → Critique → (Iterate or Complete)
 
@@ -360,6 +360,31 @@ Rejected alternatives:
 
 Revisit if: Users hit rate limits regularly
 
+# Decision 017 [DEPRECATED — see Decision 027]
+
+## Hypothesis: 5% minimum floor
+
+Date: 2026-07-26
+Superseded: 2026-07-31 by Decision 027
+
+Decision:
+Add a 5% minimum probability floor so no hypothesis is ever completely dismissed.
+
+Reason (original):
+Intellectually honest — the market can always surprise you.
+
+Why deprecated:
+The floor was mathematically dishonest. It redistributed probability mass from stronger cases to weaker ones artificially. A 1% bear case forced to 5% would steal 4% from bull/base without new evidence. True intellectual honesty requires explicit uncertainty, not mathematical fudging.
+
+Replacement:
+Decision 027 — Explicit uncertainty score separate from directional bias. No artificial floors.
+
+Rejected alternatives:
+- Allow 0% probabilities (epistemically arrogant)
+- Higher floor like 10% (too distorting)
+
+Revisit if: Uncertainty modeling becomes sophisticated enough to replace floors
+
 ---
 
 # Decision 018
@@ -546,3 +571,172 @@ Rejected alternatives:
 - Stop after one iteration (loses opportunity for refinement)
 
 Revisit if: Adaptive plan refinement allows agents to collect genuinely new evidence between iterations.
+
+
+---
+
+# Decision 027
+
+## Kill fake probability percentages — use directional bias + uncertainty
+
+Date: 2026-07-31
+
+Decision:
+Replace the three-way probability split (Bull% + Bear% + Base% = 100%) with two separate outputs:
+1. Directional Bias: Bullish strength vs Bearish strength (raw evidence weights)
+2. Uncertainty: Separate score (Scarcity + Conflict + Coverage)
+
+Reason:
+The old system produced fake probabilities. "Bear 49%" was not a probability — it was a normalized heuristic score. The 5% floor (Decision 017) actively redistributed probability mass without evidence. This violated the core principle of evidence-based research.
+
+The new model:
+- Shows raw evidence strength for each direction
+- Makes uncertainty explicit and auditable
+- Prevents the "base case as garbage can" problem
+- Is honest about what we know and don't know
+
+Implementation:
+- `_assess_evidence()` converts register data into `EvidenceClaim` objects with direction and strength
+- `_compute_directional_bias()` sums bullish vs bearish strength
+- `_compute_uncertainty()` scores scarcity, conflict, coverage separately
+- Base case = neutral signals, not leftover probability
+
+Rejected alternatives:
+- Keep probabilities with higher floor (still dishonest)
+- Use Bayesian inference (overkill for MVP, requires priors we don't have)
+- Show only directional bias without uncertainty (hides epistemic humility)
+
+Revisit if: We develop enough data to train genuine probability models
+
+---
+
+# Decision 028
+
+## Critic is an analyst, not an auditor
+
+Date: 2026-07-31
+
+Decision:
+Redesign the Critic from a checklist auditor ("Do you have all 17 features?") to a research director ("Can you defend your thesis?").
+
+Reason:
+The old Critic produced the same output for every stock: missing 7 features after iteration 1, missing 4 after iteration 2, complete at iteration 3. It was a treadmill, not an adaptive loop.
+
+The new Critic:
+- Iteration 1 asks: "Can I form a coherent directional view?"
+- Iteration 2 asks: "Did deeper data change the story?"
+- Iteration 3 is a circuit breaker
+- Halt when dimensions agree, not when a checklist is full
+
+This makes the loop genuinely adaptive. AAPL halted at iteration 1 because quant and business agreed on bearish direction.
+
+Implementation:
+- 6-phase pipeline: Inventory → Signals → Dashboard → Contradictions → Active Questions → Halt
+- Dashboard has 4 dimensions: Data Quality, Coverage, Agreement, Stability
+- Active Questions replace `missing_evidence` feature lists
+
+Rejected alternatives:
+- Pure LLM Critic (non-deterministic, opaque, slow)
+- Keep checklist but make it shorter (still a treadmill)
+- Dynamic feature discovery (too complex for MVP)
+
+Revisit if: Need semantic claim verification beyond hardcoded rules
+
+---
+
+# Decision 029
+
+## Uncertainty is a separate dimension from directional conviction
+
+Date: 2026-07-31
+
+Decision:
+Uncertainty is not "whatever probability is left over after bull and bear." It is an independently computed score.
+
+Reason:
+In the old model, Base case absorbed leftover probability mass. This meant Base was doing double duty: (a) representing neutral evidence, and (b) hiding how confused we were. A 43% base case could mean "fairly valued" or "we have no idea" — the number couldn't distinguish.
+
+The new model separates:
+- Directional Bias: "If forced to pick, which way?" (bullish/bearish/neutral)
+- Uncertainty: "How much should you trust that pick?" (0-100% with factors)
+
+This is how real analysts communicate. They say "I'm bearish, but with moderate uncertainty because I only have 2 of 3 dimensions."
+
+Implementation:
+- Uncertainty = Scarcity (few signals) + Conflict (dimensions disagree) + Coverage (missing dimensions)
+- Each factor is independently computed and exposed in output
+- Uncertainty score has levels: Low, Moderate, Elevated, High, Extreme
+
+Rejected alternatives:
+- Keep base case as uncertainty proxy (ambiguous)
+- Use variance of agent outputs (requires multiple runs)
+- Ask LLM "how confident are you?" (not auditable)
+
+Revisit if: We develop predictive confidence calibration
+
+---
+
+# Decision 030
+
+## Dashboard-driven halt logic
+
+Date: 2026-07-31
+
+Decision:
+The loop halts based on the Critic's Dashboard, not on a feature checklist.
+
+Reason:
+Old halt condition: `missing_evidence` empty OR `MAX_ITERATIONS` reached. This meant every healthy stock ran all 3 iterations because the checklist had 17 items.
+
+New halt conditions (iteration-aware):
+- Iteration 1: Halt if Coverage &gt;= 50%, Agreement = High, no critical contradictions
+- Iteration 2: Halt if Stability = Stable (hypotheses didn't shift with deeper data)
+- Iteration 3: Always halt (circuit breaker)
+
+This means most assets halt early. Only messy, contradictory assets run all 3 iterations. The number of iterations becomes information about the asset.
+
+Implementation:
+- Dashboard computes 4 scores: Data Quality, Coverage, Agreement, Stability
+- Halt decision reads Dashboard and iteration number
+- Active Questions track what would need to be answered to continue
+
+Rejected alternatives:
+- Halt when all features present (treadmill)
+- Halt when confidence &gt; threshold (confidence was fake anyway)
+- Let LLM decide when to stop (non-deterministic, dangerous)
+
+Revisit if: Need more sophisticated stopping rules (e.g., cost-benefit of deeper data)
+
+---
+
+# Decision 031
+
+## Evidence Register as single source of truth
+
+Date: 2026-07-31
+
+Decision:
+All agents read from and write to a central Evidence Register. No agent passes outputs directly to another agent.
+
+Reason:
+The old system had agents returning dicts that were passed downstream. This created tight coupling: if Quant's output format changed, Risk and Hypotheses broke.
+
+The Evidence Register decouples agents:
+- Each agent writes its findings to the register with provenance
+- Downstream agents read what they need from the register
+- The register tracks: source agent, tier, data_points, data_period, timestamp
+- Trustworthiness checks ensure statistical validity
+
+This is the core architectural change that enabled Issue #9b+.
+
+Implementation:
+- `core/evidence.py`: `EvidenceRegister` class with `add()`, `get()`, `has()`, `is_trustworthy()`, `snapshot()`
+- `EvidenceItem` dataclass: value, source, timestamp, tier, data_points, data_period
+- Loop controller passes register to all agents
+
+Rejected alternatives:
+- Message passing between agents (complex, fragile)
+- Direct function calls (tight coupling)
+- Database as register (too slow for iteration)
+
+Revisit if: Need persistence across sessions or distributed agents

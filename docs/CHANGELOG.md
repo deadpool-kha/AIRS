@@ -278,3 +278,62 @@
 - Business Agent iterations 2 and 3 reuse the same RSS feeds (live feeds only; no historical access).
 - Technical Agent iterations 2 and 3 reuse the same GitHub repository snapshot (repository state is unchanged).
 - Only the Quant Agent currently benefits from updated inputs between iterations.
+
+
+---
+
+
+
+```markdown
+## [0.3.6] - 2026-07-31
+
+### Added
+- `core/evidence.py` — Evidence Register with provenance tracking (source, tier, data_points, data_period, timestamp)
+- Critic Agent v2 — 6-phase analyst model:
+  - Phase 1: Inventory
+  - Phase 2: Directional Signals (bullish/bearish/neutral per dimension)
+  - Phase 3: Dashboard (Data Quality, Coverage, Agreement, Stability)
+  - Phase 4: Contradictions (12 hardcoded rules + catch-all)
+  - Phase 5: Active Questions (specific research questions, not feature checklists)
+  - Phase 6: Halt Decision (iteration-aware: coherent view / stable thesis / circuit breaker)
+- Dashboard-driven halt logic — loop stops when view is coherent, not when checklist is full
+- Hypothesis Engine v3 — evidence-weighted directional bias + explicit uncertainty:
+  - `directional_bias`: Bullish strength vs Bearish strength (raw scores)
+  - `uncertainty`: Separate score (Scarcity + Conflict + Coverage)
+  - `claims`: Structured evidence with source, raw_value, strength, direction
+  - Base case = neutral signals, not "leftover probability"
+- Stability tracking — Critic compares current vs previous iteration dashboard
+- Active Questions — each question includes "Why it matters" and whether deeper data can resolve it
+- `dashboard_history` column in `loop_states` SQLite table
+
+### Changed
+- `agents/critic.py` — Complete rewrite. Old checklist-based audit replaced with phased analyst model.
+- `reports/hypothesis.py` — Killed fake probability percentages. No more 5% floor. No more three-way 100% normalization.
+- `controller/loop.py` — Passes `previous_critic_output` for stability tracking. Displays dashboard instead of flat confidence.
+- `main.py` — Final summary renders Dashboard, Directional Bias, Uncertainty, Active Questions, Unresolved Contradictions.
+- Loop behavior: Business and Technical run once (bootstrap). Only Quant iterates. Loop halts early when view is coherent.
+
+### Removed
+- "Confidence: 100%" flat score — replaced with 4-dimensional dashboard
+- `missing_evidence` as primary loop driver — replaced with Active Questions
+- 5% minimum probability floor in hypotheses — superseded by explicit uncertainty metric
+
+### Fixed
+- Treadmill loop eliminated — old system ran all agents 3× with same inputs; new system halts at iteration 1 when dimensions agree
+- Fake probabilities eliminated — old system produced Bear 49% / Base 43% / Bull 7% from heuristic point-scoring; new system produces directional bias + uncertainty
+
+### Tested
+- AAPL: Halted at iteration 1 (not 3). Dashboard: Data Quality 81%, Coverage 59%, Agreement High, Stability Unknown. Directional Bias: BEARISH (Bull 0.58, Bear 1.68, Net -1.10). Uncertainty: Moderate 29%.
+
+### Decisions
+- Decision 027: Kill fake probability percentages — directional bias + uncertainty
+- Decision 028: Critic as analyst (iteration-aware) not auditor (checklist)
+- Decision 029: Uncertainty as separate dimension from directional conviction
+- Decision 030: Dashboard-driven halt logic
+- Decision 031: Evidence Register as single source of truth
+- Decision 017 deprecated: 5% floor was mathematically dishonest
+
+### Known Issues
+- Risk Agent still reads legacy `agent_outputs` dict via bridge; does not read directly from Evidence Register yet
+- Hypothesis strength thresholds (0.35, 0.45, 0.60, 0.75) are intuitive, not validated against historical data
+- Agreement logic treats "mixed signals" neutral the same as "missing data" neutral; could be tightened

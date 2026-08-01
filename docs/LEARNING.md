@@ -12,7 +12,7 @@ An agent loop consists of:
 - evaluation
 - stopping condition
 
-Source: Andrew Ng's talks on AI agent design
+
 
 Application to AIRS:
 - State = research progress dict (entity, iteration, agent_outputs)
@@ -26,7 +26,7 @@ Application to AIRS:
 
 Learned:
 
-Loop engineering (Andrew Ng) shifts AI from one-shot prompting to automated, self-improving systems.
+Loop engineering shifts AI from one-shot prompting to automated, self-improving systems.
 
 Key insight: The system critiques its own output and iterates to improve quality.
 
@@ -373,3 +373,91 @@ Application to AIRS:
 - Used for execution state validation in the `loop_states` table
 
 Source: SQLite documentation and implementation experience
+
+## 2026-07-31: Checklist Loops Are Not Adaptive Loops
+
+Learned:
+
+The difference between a treadmill and an analyst:
+
+**Treadmill (old system):**
+- Asks the same question every iteration: "Do you have all 17 features?"
+- Produces the same answer for every stock: missing 7, then 4, then 0
+- Halt condition is pre-ordained: always iteration 3
+- "Confidence: 100%" means checklist complete, not "we are certain"
+
+**Analyst (new system):**
+- Asks different questions per iteration:
+  - Iteration 1: "Can I form a coherent view?"
+  - Iteration 2: "Did deeper data change the story?"
+  - Iteration 3: "What contradictions remain unresolved?"
+- Halt condition is responsive: AAPL stopped at iteration 1, ORCL might need 3
+- Dashboard shows what we actually know: Data Quality, Coverage, Agreement, Stability
+
+Key insight:
+**Features are means, not ends.** The loop should exist to answer investment questions, not to collect features. If you can form a directional view with 10 features, you don't need the other 7.
+
+Application to AIRS:
+- Critic now has 6 phases, not 1 checklist
+- Hypotheses show directional bias + uncertainty, not fake probabilities
+- Loop halts when the story is coherent, not when the checklist is full
+
+Source: Debugging the old loop and redesigning Issue #9b+
+
+---
+
+## 2026-07-31: "Confidence" Is a Dangerous Word in Financial Software
+
+Learned:
+
+"Confidence: 100%" is one of the most misleading outputs a system can produce.
+
+Old system:
+- Confidence = checklist coverage percentage
+- 100% meant "you have all 17 features"
+- Users would read it as "we are certain about this investment"
+- This is dangerous — it conflates structural completeness with epistemic certainty
+
+New system:
+- No single "confidence" number
+- Dashboard shows 4 dimensions independently
+- Uncertainty is explicit and factorized (Scarcity, Conflict, Coverage)
+- Users can see *why* we are or aren't sure
+
+Lesson: If you can't explain exactly how a number was computed, don't show it to investors.
+
+Application to AIRS:
+- Killed the `confidence` float in Critic output
+- Replaced with `dashboard` dict
+- Hypotheses show `directional_bias` and `uncertainty` separately
+
+Source: Redesigning Critic and Hypothesis engines for Issue #9b+
+
+---
+
+## 2026-07-31: The Base Case Is Not a Garbage Can
+
+Learned:
+
+In three-way probability models (Bull + Bear + Base = 100%), the Base case becomes a mathematical dumping ground.
+
+Example:
+- Bull: 80%, Bear: 15% → Base gets 5%
+- But that 5% might represent:
+  - Genuine neutral evidence (RSI 50, stable volatility)
+  - OR "we don't know" (missing data)
+  - OR mathematical leftover from normalization
+
+These are three completely different things. Lumping them together makes the output unreadable.
+
+Solution:
+- Separate directional conviction (bullish vs bearish) from uncertainty
+- Base case only contains explicitly neutral signals
+- Uncertainty is its own score with its own factors
+
+Application to AIRS:
+- Hypothesis engine no longer normalizes to 100%
+- Base case only gets signals tagged as "neutral" (RSI 40-60, moderate risk, etc.)
+- Uncertainty score explains how much we don't know
+
+Source: Redesigning `reports/hypothesis.py` for Issue #9b+
