@@ -740,3 +740,30 @@ Rejected alternatives:
 - Database as register (too slow for iteration)
 
 Revisit if: Need persistence across sessions or distributed agents
+
+---
+
+# Decision 032
+
+## Use Jinja2 templating for report generation instead of inline string formatting
+
+Date: 2026-08-05
+
+Decision:
+Use Jinja2 with a dedicated `.md.j2` template file for the Report Generator instead of building the report through Python f-strings or concatenation.
+
+Reason:
+- Separation of concerns: report structure lives in a template, data formatting lives in Python
+- Templates are human-readable and editable without touching generator logic
+- Supports conditional sections (skip empty tables, show/hide tiers) cleanly
+- Reusable across different report types without code changes
+- Designers or non-developers can modify output format without understanding Python
+
+Rejected alternatives:
+- Inline f-strings (tight coupling, hard to maintain, ugly with conditional logic)
+- Python `string.Template` (too limited for tables and conditionals)
+- Pure LLM-generated reports (non-deterministic, no structure guarantees, expensive)
+
+Revisit if: Need dynamic template selection per asset type or multi-format output (HTML, DOCX)
+
+---

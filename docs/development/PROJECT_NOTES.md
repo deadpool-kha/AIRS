@@ -1,10 +1,10 @@
-# MEMORY.md
+# PROJECT_NOTES.md
 
 # Project: Autonomous Investment Research System (AIRS)
 
 ---
 
-# Role of This Document
+## Role of This Document
 
 This document provides complete project context for AI assistants and developers.
 
@@ -18,20 +18,20 @@ When assisting with this project:
 
 ---
 
-# Project Goal
+## Project Goal
 
 Build an AI-powered investment research system that automates the workflow of a professional investment research team.
 
 The system analyzes:
 
-## 1. Public Companies
+### 1. Public Companies
 
 Examples:
 
 - NVIDIA
 - Tesla
 
-## 2. Crypto Protocols / Assets
+### 2. Crypto Protocols / Assets
 
 Examples:
 
@@ -39,13 +39,13 @@ Examples:
 - Solana
 - Stacks
 
-## 3. AI Companies / Startups
+### 3. AI Companies / Startups
 
 Using publicly available information.
 
 ---
 
-## Important Goal Clarification
+### Important Goal Clarification
 
 The goal is **NOT** to predict stock or crypto prices.
 
@@ -57,7 +57,7 @@ The goal is to create:
 
 ---
 
-# Why This Project Exists
+## Why This Project Exists
 
 This project is being built as:
 
@@ -68,16 +68,16 @@ This project is being built as:
 The project combines:
 
 - AI agents
-- Loop engineering 
+- Loop engineering
 - Quantitative analysis
 - Data engineering
 - Financial research workflows
 
 ---
 
-# Core Product Vision
+## Core Product Vision
 
-## User Input
+### User Input
 
 Example:
 
@@ -87,7 +87,7 @@ The system performs an investment committee workflow.
 
 ---
 
-## Research Workflow
+### Research Workflow
 
 ```text
 1. Collect evidence
@@ -114,9 +114,9 @@ The system performs an investment committee workflow.
 
 ---
 
-# Important Engineering Principle
+## Important Engineering Principle
 
-## Do NOT Use LLMs For Everything
+### Do NOT Use LLMs For Everything
 
 Traditional programming handles:
 
@@ -128,9 +128,7 @@ Traditional programming handles:
 - Feature selection
 - Halt decisions
 
----
-
-## LLM Responsibilities
+### LLM Responsibilities
 
 LLMs are used for:
 
@@ -140,17 +138,13 @@ LLMs are used for:
 - Summarization
 - Final report generation
 
----
-
-## Critical Rule
+### Critical Rule
 
 The LLM is a reasoning layer, not the entire system.
 
 The Critic Agent is:
 
-```
-100% rule-based
-```
+- 100% rule-based
 
 No LLM decides:
 
@@ -165,7 +159,7 @@ LLM suggestions are:
 
 ---
 
-# High-Level Architecture
+## High-Level Architecture
 
 ```text
                      User
@@ -199,26 +193,23 @@ LLM suggestions are:
  contradictory)              + Uncertainty)
                                   │
                                   ▼
-                            Final Report
+                            Report Generator
+                           (Jinja2 → Markdown/PDF)
 ```
 
 ---
 
-# Core Components
+## Core Components
 
----
-
-# 1. Data Layer
+### 1. Data Layer
 
 Responsible for collecting external information.
 
----
-
-## Market Data
+**Market Data**
 
 Sources:
 
-- Yahoo Finance (`yfinance`)
+- Yahoo Finance (yfinance)
 - CoinGecko
 
 Collected data:
@@ -228,9 +219,7 @@ Collected data:
 - Returns
 - Volatility
 
----
-
-## Technical Data
+**Technical Data**
 
 Source:
 
@@ -243,9 +232,7 @@ Collected data:
 - Releases
 - Issues
 
----
-
-## Business Data
+**Business Data**
 
 Sources:
 
@@ -260,23 +247,21 @@ Collected data:
 - Product launches
 - Important events
 
----
+### 2. Database Layer
 
-# 2. Database Layer
+**Initial Database**
 
-## Initial Database
-
-```
+```text
 SQLite
 ```
 
-## Future Possibility
+**Future Possibility**
 
-```
+```text
 PostgreSQL
 ```
 
-## Stores
+Stores:
 
 - Entities
 - Market data
@@ -287,9 +272,7 @@ PostgreSQL
 - Loop iteration history
 - Dashboard snapshots
 
----
-
-# 3. Evidence Register
+### 3. Evidence Register
 
 Location:
 
@@ -299,18 +282,18 @@ core/evidence.py
 
 Central in-memory evidence accumulator.
 
----
-
-## Design
+**Design**
 
 - Plain Python dictionary
-- `EvidenceItem` dataclasses
-- Provenance tracking:
-  - Source agent
-  - Tier
-  - Data points
-  - Data period
-  - Timestamp
+- EvidenceItem dataclasses
+
+Provenance tracking:
+
+- Source agent
+- Tier
+- Data points
+- Data period
+- Timestamp
 
 Trustworthiness checks:
 
@@ -321,10 +304,7 @@ No:
 
 - Database dependency
 - Microservices
-
----
-
-## API
+- API
 
 ```python
 add(
@@ -354,28 +334,24 @@ list_by_source(source)
 list_by_tier(tier)
 ```
 
----
-
-# 4. Agents
+### 4. Agents
 
 Agents are specialized modules.
 
-They are **not** separate ChatGPT conversations.
+They are not separate ChatGPT conversations.
 
 All agents:
 
 - Read from Evidence Register
 - Write outputs to Evidence Register
 
----
+#### Quant Agent
 
-# Quant Agent
-
-## Purpose
+**Purpose**
 
 Analyze numerical information.
 
-## Responsibilities
+**Responsibilities**
 
 - Price trends
 - Returns
@@ -389,9 +365,7 @@ Analyze numerical information.
 - Beta
 - Correlation matrix
 
----
-
-## Implementation
+**Implementation**
 
 Python libraries:
 
@@ -401,15 +375,13 @@ Python libraries:
 
 No LLM required.
 
----
+**Tiered Computation**
 
-## Tiered Computation
+Tier 1 (3 Months)
 
-### Tier 1 (3 Months)
+- Basic features.
 
-Basic features.
-
-### Tier 2 (6 Months)
+Tier 2 (6 Months)
 
 Adds:
 
@@ -417,7 +389,7 @@ Adds:
 - MACD
 - Volume profile
 
-### Tier 3 (1 Year)
+Tier 3 (1 Year)
 
 Adds:
 
@@ -426,42 +398,36 @@ Adds:
 - Beta
 - Correlation
 
----
+#### Technical Agent
 
-# Technical Agent
-
-## Purpose
+**Purpose**
 
 Analyze technical ecosystem health.
 
-## Data Source
+**Data Source**
 
 GitHub activity.
 
-## Metrics
+**Metrics**
 
 - Contributor growth
 - Commit frequency
 - Release activity
 - Project maintenance
 
-## Implementation
+**Implementation**
 
-Python.
-
-May use LLM for summary generation only.
+Python. May use LLM for summary generation only.
 
 Runs once per session during bootstrap.
 
----
+#### Business Agent
 
-# Business Agent
-
-## Purpose
+**Purpose**
 
 Analyze qualitative business information.
 
-## Inputs
+**Inputs**
 
 - News
 - Announcements
@@ -474,11 +440,9 @@ Uses local LLM for:
 
 Runs once per session during bootstrap.
 
----
+#### Risk Agent
 
-# Risk Agent
-
-## Purpose
+**Purpose**
 
 Identify weaknesses and negative signals.
 
@@ -496,60 +460,52 @@ Uses:
 
 Reads from Evidence Register through legacy bridge.
 
----
+#### Critic Agent
 
-# Critic Agent
-
-## Purpose
+**Purpose**
 
 Evaluate research quality and direct inquiry.
 
----
+**Architecture: 6-Phase Pipeline**
 
-# Architecture: 6-Phase Pipeline
+1. Inventory
 
-## 1. Inventory
+   Catalog available evidence.
 
-Catalog available evidence.
+2. Directional Signals
 
-## 2. Directional Signals
+   Extract:
+   - Bullish
+   - Bearish
+   - Neutral
 
-Extract:
+   signals per dimension.
 
-- Bullish
-- Bearish
-- Neutral
+3. Dashboard
 
-signals per dimension.
+   Compute four auditable dimensions:
+   - Data Quality
+   - Coverage
+   - Agreement
+   - Stability
 
-## 3. Dashboard
+4. Contradictions
 
-Compute four auditable dimensions:
+   Execute 12 hardcoded cross-agent rules.
 
-- Data Quality
-- Coverage
-- Agreement
-- Stability
+5. Active Questions
 
-## 4. Contradictions
+   Generate specific research questions.
 
-Execute 12 hardcoded cross-agent rules.
+6. Halt Decision
 
-## 5. Active Questions
+   Iteration-aware stopping logic.
 
-Generate specific research questions.
-
-## 6. Halt Decision
-
-Iteration-aware stopping logic.
-
----
-
-## Technology
+**Technology**
 
 Decision system:
 
-```
+```text
 100% rule-based
 ```
 
@@ -559,9 +515,7 @@ Optional LLM:
 - Display-only
 - Non-binding
 
----
-
-# 5. Hypothesis Engine
+### 5. Hypothesis Engine
 
 Location:
 
@@ -571,23 +525,19 @@ reports/hypothesis.py
 
 Generates investment hypotheses from the Evidence Register.
 
----
+**Output**
 
-## Output
-
-### Directional Bias
+**Directional Bias**
 
 Bullish strength versus bearish strength.
 
 Uses:
 
-```
+```text
 Raw evidence weights
 ```
 
----
-
-### Uncertainty
+**Uncertainty**
 
 Separate score based on:
 
@@ -595,9 +545,7 @@ Separate score based on:
 - Conflict
 - Coverage
 
----
-
-### Claims
+**Claims**
 
 Each claim contains:
 
@@ -607,36 +555,28 @@ Each claim contains:
 - Description
 - Direction
 
----
-
-### Base Case
+**Base Case**
 
 Neutral signals.
 
 Not:
 
-```
+```text
 Leftover probability
 ```
 
----
-
-## Design Principles
+**Design Principles**
 
 - No artificial probability floors
 - No normalization to 100%
 - Every claim traceable to Evidence Register
 - Uncertainty is explicit
 
----
-
-# 6. Loop Engineering Design
+### 6. Loop Engineering Design
 
 The system uses a controlled research loop engineering concept.
 
----
-
-# Research Loop
+**Research Loop**
 
 ```text
 Receive Goal
@@ -681,20 +621,18 @@ Critic
       │
       ▼
 Final Output
-Risk + Hypotheses
+Risk + Hypotheses + Report
       │
       ▼
 Report Generator
-(future)
+(Jinja2 → Markdown / PDF)
 ```
 
----
-
-# Loop Controller Decisions
+**Loop Controller Decisions**
 
 Business and Technical:
 
-```
+```text
 Run once
 ```
 
@@ -704,48 +642,68 @@ Their inputs do not change during execution.
 
 Quant:
 
-```
+```text
 Only iterative agent
 ```
 
----
-
-## Halt Conditions
+**Halt Conditions**
 
 Stop when:
 
 - Dimensions agree on direction
 - Hypotheses stabilize
 - Active questions cannot be answered by deeper data
-- `MAX_ITERATIONS = 3`
 
----
+```text
+MAX_ITERATIONS = 3
+```
 
-# 7. LLM Architecture
+### 7. Report Generator
+
+Location:
+
+```text
+reports/generator.py
+```
+
+Produces professional investment research memos.
+
+**Design**
+
+- Jinja2 templating (reports/templates/report.md.j2)
+- Deterministic data formatting
+- Optional PDF export via WeasyPrint
+- Graceful fallback when PDF dependencies are missing
+
+**Sections**
+
+- Executive Summary
+- Audit Dashboard
+- Investment Thesis (Bull / Bear / Base + Uncertainty)
+- Evidence Register Summary
+- Risk Assessment
+- Active Questions & Unresolved Contradictions
+- Appendix
+
+### 8. LLM Architecture
 
 Local-first approach.
 
 No paid APIs during development.
 
----
+**Runtime**
 
-## Runtime
-
-```
+```text
 Ollama
 ```
 
----
-
-## Supported Models
+**Supported Models**
 
 - Qwen 2.5 7B
 - Llama 3.1 8B
 - Mistral 7B
 
----
-
-# LLM Responsibilities
+**LLM Responsibilities**
 
 Used for:
 
@@ -756,9 +714,7 @@ Used for:
 - News summarization
 - Signal extraction
 
----
-
-# LLM Is NOT Used For
+**LLM Is NOT Used For**
 
 Never use LLMs for:
 
@@ -771,10 +727,10 @@ Never use LLMs for:
 
 ---
 
-# Hardware Environment
+## Hardware Environment
 
-| Component | Specification |
-|---|---|
+| **Component** | **Specification** |
+| --- | --- |
 | GPU | NVIDIA GTX 1060 6GB |
 | RAM | 16 GB |
 | OS | Windows 10 |
@@ -782,19 +738,21 @@ Never use LLMs for:
 
 ---
 
-# Technology Stack
+## Technology Stack
 
-| Category | Technology |
-|---|---|
+| **Category** | **Technology** |
+| --- | --- |
 | Backend | Python |
 | Database | SQLite |
 | AI Runtime | Ollama |
 | Vector Search | FAISS / ChromaDB (future) |
 | Frontend | Streamlit (future) |
+| Templating | Jinja2 |
+| PDF Export | WeasyPrint (optional) |
 
 ---
 
-# Development Rules
+## Development Rules
 
 - Build the smallest working version first.
 - Avoid unnecessary complexity.
@@ -809,7 +767,7 @@ Never use LLMs for:
 
 ---
 
-# Git Workflow
+## Git Workflow
 
 Rules:
 
@@ -822,10 +780,12 @@ feature/quant-agent
 ```
 
 - No commits directly to main without PR review.
-- Issues track:
-  - Bugs
-  - Features
-  - Research tasks
+
+Issues track:
+
+- Bugs
+- Features
+- Research tasks
 
 Close issues with commit messages:
 
@@ -841,44 +801,53 @@ Make:
 
 ---
 
-# Current Project Status
+## Current Project Status
 
-## Stage
+**Stage**
 
-```
+```text
 Active Development — Core Loop Complete
 ```
 
+**Completed**
+
+- ✅ Project concept defined
+- ✅ Architecture designed
+- ✅ Documentation system created
+- ✅ GitHub repository initialized
+- ✅ Database foundation
+- ✅ All 5 agents:
+  - Quant
+  - Technical
+  - Business
+  - Risk
+  - Critic
+- ✅ Evidence Register
+- ✅ Hypothesis Engine v3
+- ✅ Loop Controller v2
+- ✅ Report Generator (Issue #10)
+- ✅ Jinja2 templating with PDF export
+
+**Current Priorities**
+
+**Phase 9 — Audit Trail & Backtesting**
+
+- research_sessions and research_outcomes database tables
+- Session snapshot persistence
+- Historical accuracy tracking
+- `--audit` CLI command
+
+**Documentation Reorganization**
+
+- Ensure all internal Markdown links work after folder restructuring
+
+**Risk Agent Direct Evidence Register Integration**
+
+- Remove legacy bridge dependency
+
 ---
 
-## Completed
-
-✅ Project concept defined  
-✅ Architecture designed  
-✅ Documentation system created  
-✅ GitHub repository initialized  
-✅ Database foundation  
-✅ All 5 agents:
-- Quant
-- Technical
-- Business
-- Risk
-- Critic
-
-✅ Evidence Register  
-✅ Hypothesis Engine v3  
-✅ Loop Controller v2  
-
----
-
-# Current Priorities
-
-1. Report Generator (Issue #10)
-2. Risk Agent direct Evidence Register integration
-
----
-
-# Success Criteria
+## Success Criteria
 
 The MVP is successful if:
 

@@ -222,20 +222,24 @@ Working system &gt; beautiful interface &gt; advanced features
 ## Goal: System generates professional investment memo
 
 ### Definition of Done:
-- [ ] Combine dashboard, hypotheses, active questions, and contradictions
-- [ ] Local LLM writes structured report prose
-- [ ] Markdown output with sections:
+- [x] Combine dashboard, hypotheses, active questions, and contradictions
+- [x] Jinja2-templated Markdown reports (no LLM for table formatting)
+- [x] Markdown output with 7 sections:
   - Executive Summary
   - Audit Dashboard
   - Investment Thesis (Directional Bias + Uncertainty)
   - Evidence Register Summary
   - Risk Assessment
   - Active Questions & Unresolved Contradictions
-- [ ] Cites evidence and sources
-- [ ] Handles partial data gracefully
-- [ ] `reports/generator.py` replaces `raise NotImplementedError`
+  - Appendix
+- [x] Cites evidence and sources
+- [x] Handles partial data gracefully
+- [x] `reports/generator.py` with `ReportGenerator` class
+- [x] Optional PDF export via WeasyPrint (graceful fallback)
+- [x] Reports saved to `reports/output/` subdirectory
+- [x] CLI `--pdf` flag support
 
-### Status: 🚧 In Progress (Issue #10)
+### Status: ✅ Complete (Issue #10)
 ### Branch: `feature/#10-report-generator`
 ### Estimated: 2-3 days
 ### Blocked by: Phase 7
@@ -258,7 +262,7 @@ Working system &gt; beautiful interface &gt; advanced features
   - "Accuracy on crypto vs public_stock"
   - "How often did unresolved contradictions predict reversals?"
 
-### Status: 📅 Planned (Issue #12)
+### Status: 🚧 Active (Issue #12)
 ### Estimated: 2-3 days
 ### Blocked by: Phase 8
 ### Blocks: Nothing
@@ -295,7 +299,7 @@ Must have:
 - [x] Critic Agent
 - [x] Evidence Register
 - [x] Hypothesis Engine (Directional Bias + Uncertainty)
-- [ ] Report Generator
+- [x] Report Generator
 
 Optional:
 - [ ] Streamlit UI

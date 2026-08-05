@@ -1,0 +1,367 @@
+{# AIRS Investment Research Memo Template #}
+# Investment Research Memo: {{ entity }}
+
+**Asset Type:** `{{ asset_type }}`  
+**Ticker:** {{ ticker or "N/A" }}  
+**Generated:** {{ generated_at }}  
+**Research Iterations:** {{ iterations }}  
+**Halt Reason:** {{ halt_reason }}
+
+---
+
+## 1. Executive Summary
+
+{% if executive_summary %}
+{{ executive_summary }}
+{% else %}
+{% if directional_bias %}
+{% set net = directional_bias.net %}
+{% if net == "bullish" %}
+**Directional Bias: BULLISH** — The evidence supports a positive investment thesis.
+{% elif net == "bearish" %}
+**Directional Bias: BEARISH** — The evidence supports a cautious or negative investment thesis.
+{% else %}
+**Directional Bias: NEUTRAL** — Available evidence does not strongly favor either direction.
+{% endif %}
+{% else %}
+**Directional Bias:** Unable to determine from available evidence.
+{% endif %}
+
+{% if uncertainty %}
+**Uncertainty Level:** {{ "%.0f"|format(uncertainty.score * 100) }}% — **{{ uncertainty.level }}**  
+*{{ uncertainty.reason }}*
+{% endif %}
+{% endif %}
+
+The research loop halted after **{{ iterations }} iteration{{ "s" if iterations != 1 else "" }}** because: *{{ halt_reason }}*.
+
+
+---
+
+## 2. Audit Dashboard
+
+| Dimension | Score | Details |
+|-----------|-------|---------|
+{% if dashboard %}
+{% set dq = dashboard.data_quality %}
+| Data Quality | {{ "%.0f"|format(dq.score * 100) }}% | {{ dq.details.keys()|list|join(", ") if dq.details else "N/A" }} |
+{% set cov = dashboard.coverage %}
+| Coverage | {{ "%.0f"|format(cov.score * 100) }}% | {{ cov.present }}/{{ cov.required }} features present |
+{% set agr = dashboard.agreement %}
+| Agreement | {{ agr.level }} | {{ agr.details }} |
+{% set stab = dashboard.stability %}
+| Stability | {{ stab.level }} | {{ stab.details }} |
+{% else %}
+| Data Quality | N/A | No dashboard data |
+| Coverage | N/A | No dashboard data |
+| Agreement | N/A | No dashboard data |
+| Stability | N/A | No dashboard data |
+{% endif %}
+
+---
+
+## 3. Investment Thesis
+
+### 3.1 Directional Bias
+
+{% if directional_bias %}
+- **Bullish Strength:** {{ "%.2f"|format(directional_bias.bull_strength) }} ({{ directional_bias.bull_evidence_count }} claims)
+- **Bearish Strength:** {{ "%.2f"|format(directional_bias.bear_strength) }} ({{ directional_bias.bear_evidence_count }} claims)
+- **Net Score:** {{ "%+.2f"|format(directional_bias.directional_score) }}
+- **Overall Direction:** {{ directional_bias.net.upper() }}
+{% else %}
+*Directional bias could not be computed from available evidence.*
+{% endif %}
+
+### 3.2 Bull Case
+
+{% if bull and bull.claims %}
+**Thesis:** {{ bull.thesis }}
+
+| Evidence | Source | Strength | Raw Value |
+|----------|--------|----------|-----------|
+{% for claim in bull.claims %}
+| {{ claim.description }} | {{ claim.source }} | {{ "%.2f"|format(claim.strength) }} | {{ claim.raw_value or "—" }} |
+{% endfor %}
+
+**Total Strength:** {{ "%.2f"|format(bull.total_strength) }}
+{% else %}
+*No bullish evidence identified in the current research cycle.*
+{% endif %}
+
+### 3.3 Bear Case
+
+{% if bear and bear.claims %}
+**Thesis:** {{ bear.thesis }}
+
+| Evidence | Source | Strength | Raw Value |
+|----------|--------|----------|-----------|
+{% for claim in bear.claims %}
+| {{ claim.description }} | {{ claim.source }} | {{ "%.2f"|format(claim.strength) }} | {{ claim.raw_value or "—" }} |
+{% endfor %}
+
+**Total Strength:** {{ "%.2f"|format(bear.total_strength) }}
+{% else %}
+*No bearish evidence identified in the current research cycle.*
+{% endif %}
+
+### 3.4 Base / Neutral Case
+
+{% if base and base.claims %}
+**Thesis:** {{ base.thesis }}
+
+| Evidence | Source | Strength | Raw Value |
+|----------|--------|----------|-----------|
+{% for claim in base.claims %}
+| {{ claim.description }} | {{ claim.source }} | {{ "%.2f"|format(claim.strength) }} | {{ claim.raw_value or "—" }} |
+{% endfor %}
+
+**Total Strength:** {{ "%.2f"|format(base.total_strength) }}
+{% else %}
+*No neutral evidence identified in the current research cycle.*
+{% endif %}
+
+
+### 3.5 Uncertainty Analysis
+
+{% if uncertainty %}
+**Uncertainty Score:** {{ "%.0f"|format(uncertainty.score * 100) }}% — **{{ uncertainty.level }}**
+
+| Factor | Value | Interpretation |
+|--------|-------|----------------|
+{% if uncertainty.factors %}
+{% for name, value in uncertainty.factors.items() %}
+| {{ name.title() }} | {{ "%.2f"|format(value) }} | {% if name == "scarcity" %}Few signals available{% elif name == "conflict" %}Dimensions disagree{% else %}Missing research dimensions{% endif %} |
+{% endfor %}
+{% endif %}
+
+*{{ uncertainty.reason }}*
+{% else %}
+*Uncertainty analysis not available.*
+{% endif %}
+
+---
+
+
+---
+
+## 4. Evidence Register Summary
+
+### 4.1 Evidence by Source
+
+| Source | Items |
+|--------|-------|
+{% if evidence_by_source %}
+{% for source, items in evidence_by_source.items() %}
+| {{ source.title() }} | {{ items|length }} item{{ "s" if items|length != 1 else "" }}{{ ": `" + items|join("`, `") + "`" if items else "" }} |
+{% endfor %}
+{% else %}
+| — | No evidence collected |
+{% endif %}
+
+### 4.2 Evidence by Tier
+
+| Tier | Items |
+|------|-------|
+{% if evidence_by_tier %}
+{% for tier, items in evidence_by_tier.items() %}
+| Tier {{ tier }} | {{ items|length }} item{{ "s" if items|length != 1 else "" }}{{ ": `" + items|join("`, `") + "`" if items else "" }} |
+{% endfor %}
+{% else %}
+| — | No tier data |
+{% endif %}
+
+### 4.3 Quantitative Evidence
+
+{% if evidence_snapshot %}
+{% set quant_keys = ["returns", "volatility", "momentum", "moving_averages", "drawdown", "risk_score", "trend", "current_price", "rsi", "macd", "volume_profile", "atr", "volatility_regime", "beta", "correlation_matrix"] %}
+| Metric | Value |
+|--------|-------|
+{% for key, val in evidence_snapshot.items() %}
+{% if key in quant_keys %}
+{% if val is mapping %}
+| {{ key.replace("_", " ").title() }} | {% for subk, subv in val.items() %}{{ subk }}: {{ "%.4f"|format(subv) if subv is number else subv }}{% if not loop.last %}, {% endif %}{% endfor %} |
+{% elif val is number %}
+| {{ key.replace("_", " ").title() }} | {{ "%.4f"|format(val) }} |
+{% else %}
+| {{ key.replace("_", " ").title() }} | {{ val }} |
+{% endif %}
+{% endif %}
+{% endfor %}
+{% else %}
+*No evidence snapshot available.*
+{% endif %}
+
+### 4.4 Business Evidence
+
+{% if evidence_snapshot and evidence_snapshot.get("business_context") %}
+{% set biz = evidence_snapshot["business_context"] %}
+{% if biz is mapping %}
+
+**Summary:** {{ biz.get("summary", "N/A")[:200] }}{% if biz.get("summary", "")|length > 200 %}...{% endif %}
+
+{% if biz.get("signals") %}
+**Signals:**
+| Type | Category | Description |
+|------|----------|-------------|
+{% for s in biz["signals"] %}
+| {{ s.get("type", "—").upper() }} | {{ s.get("category", "—").title() }} | {{ s.get("description", "—") }} |
+{% endfor %}
+{% endif %}
+
+{% if biz.get("catalysts") %}
+**Catalysts ({{ biz["catalysts"]|length }}):**
+{% for c in biz["catalysts"] %}
+- {{ c }}
+{% endfor %}
+{% endif %}
+
+{% if biz.get("risks") %}
+**Risks ({{ biz["risks"]|length }}):**
+{% for r in biz["risks"] %}
+- {{ r }}
+{% endfor %}
+{% endif %}
+
+{% else %}
+*Business context is not in expected format.*
+{% endif %}
+{% else %}
+*No business evidence collected.*
+{% endif %}
+
+### 4.5 Technical Evidence
+
+{% if evidence_snapshot and evidence_snapshot.get("technical_context") %}
+{% set tech = evidence_snapshot["technical_context"] %}
+{% if tech is mapping and tech.get("metrics") %}
+{% set tm = tech["metrics"] %}
+
+| Metric | Value |
+|--------|-------|
+| Health Score | {{ tm.get("health_score", "N/A") }} |
+| Commit Frequency | {{ tm.get("commit_frequency", "N/A") }}/week |
+| Contributors | {{ tm.get("contributor_count", "N/A") }} |
+| Open Issues | {{ tm.get("open_issues", "N/A") }} |
+| Days Since Commit | {{ tm.get("days_since_commit", "N/A") }} |
+| Total Commits | {{ tm.get("total_commits", "N/A") }} |
+
+{% else %}
+*Technical context is not in expected format.*
+{% endif %}
+{% else %}
+*No technical evidence collected.*
+{% endif %}
+
+### 4.6 Total Evidence Items
+
+**{{ evidence_count }}** evidence items collected across all dimensions.
+
+---
+
+## 5. Risk Assessment
+
+{% if risk and risk.status == "complete" %}
+**Overall Risk Level:** {{ risk.metrics.overall_risk.upper() }}  
+**Risks Identified:** {{ risk.metrics.risk_count }}  
+**Warnings:** {{ risk.metrics.warning_count }}  
+**High Severity:** {{ risk.metrics.high_severity_count }}
+
+{% if risk.risks %}
+### Identified Risks
+
+| Severity | Category | Description | Source |
+|----------|----------|-------------|--------|
+{% for r in risk.risks %}
+| {{ r.severity.upper() }} | {{ r.category.title() }} | {{ r.description }} | {{ r.source }} |
+{% endfor %}
+{% endif %}
+
+{% if risk.warnings %}
+### Warnings
+
+| Severity | Category | Description | Source |
+|----------|----------|-------------|--------|
+{% for w in risk.warnings %}
+| MEDIUM | {{ w.category.title() }} | {{ w.description }} | {{ w.source }} |
+{% endfor %}
+{% endif %}
+{% else %}
+*Risk assessment not available or incomplete.*
+{% endif %}
+
+---
+
+## 6. Active Questions & Unresolved Contradictions
+
+### 6.1 Active Research Questions
+
+{% if active_questions %}
+{% for q in active_questions %}
+**Q{{ loop.index }}:** {{ q.question }}
+
+- **Why it matters:** {{ q.why_it_matters }}
+- **Can deeper data answer?** {% if q.can_deeper_data_answer %}Yes — additional data may resolve this.{% else %}No — requires human judgment.{% endif %}
+{% if q.evidence_needed %}
+- **Evidence needed:** `{{ q.evidence_needed|join("`, `") }}`
+{% endif %}
+
+{% endfor %}
+{% else %}
+*No active questions remain. The Critic found sufficient evidence to form a view.*
+{% endif %}
+
+### 6.2 Unresolved Contradictions
+
+{% if unresolved_contradictions %}
+{% for c in unresolved_contradictions %}
+**[{{ c.severity.upper() }}]** {{ c.name }}
+
+- **Description:** {{ c.description }}
+- **Question:** {{ c.active_question }}
+- **Rationale:** {{ c.rationale }}
+
+{% endfor %}
+{% else %}
+*No unresolved contradictions. All detected contradictions were either resolved or flagged for human review.*
+{% endif %}
+
+---
+
+## 7. Appendix
+
+### 7.1 Methodology
+
+This report was generated by the **Autonomous Investment Research System (AIRS)**, an evidence-driven research infrastructure. The system operates through the following pipeline:
+
+1. **Capability Probe** — Detects available research dimensions (quantitative, technical, business)
+2. **Bootstrap** — Runs Business and Technical agents once to establish baseline context
+3. **Iterative Evidence Accumulation** — Quant Agent runs tiered computations (Tier 1: 3mo → Tier 2: 6mo → Tier 3: 1y)
+4. **Critic Audit** — 6-phase rule-based evaluation: Inventory → Signals → Dashboard → Contradictions → Active Questions → Halt Decision
+5. **Hypothesis Generation** — Directional Bias + Uncertainty computed from evidence weights
+6. **Risk Assessment** — Downside analysis and cross-agent contradiction detection
+7. **Report Generation** — Structured memo synthesis
+
+### 7.2 Key Design Principles
+
+- **No fake probabilities.** Directional bias uses raw evidence strength, not normalized percentages.
+- **Explicit uncertainty.** Uncertainty is computed independently from directional conviction.
+- **Evidence provenance.** Every claim traces back to its source agent, computation tier, and data period.
+- **Deterministic analysis.** Financial calculations are rule-based; LLMs are used only for qualitative tasks (news summarization, report prose).
+- **Contradiction-first.** The system actively searches for conflicting signals rather than suppressing them.
+
+### 7.3 Limitations
+
+- Research is based on publicly available data only
+- Business Agent uses live RSS feeds; historical news access is limited
+- Technical Agent analyzes a single repository snapshot
+- Quant metrics are computed from closing prices and do not account for intraday movements
+- The system does not predict prices; it structures and audits research quality
+
+### 7.4 Disclaimer
+
+*This report is generated for research and educational purposes only. It does not constitute investment advice, an offer to buy or sell securities, or a recommendation of any investment strategy. Always conduct independent due diligence and consult a qualified financial advisor before making investment decisions.*
+
+---
+
+*Report generated by AIRS v0.3.6 — Evidence-Driven Loop Evolution*

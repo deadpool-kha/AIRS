@@ -1,13 +1,12 @@
-"""
-main.py
-Issue #9b+: Evidence-Driven Loop Evolution
-
-Entry point for AIRS.
-"""
-
 import argparse
 import pandas as pd
 
+from utils.formatting import (
+    header, box, mini_box, progress_bar, status,
+    dashboard_panel, bias_panel, uncertainty_panel,
+    question_line, contradiction_line, report_footer, c,
+    RED, GREEN, YELLOW, BLUE, CYAN, MAGENTA, BOLD, DIM, RESET
+)
 from agents.critic import CriticAgent
 from controller.loop import EvidenceDrivenLoop
 from agents.risk import RiskAgent
@@ -203,6 +202,7 @@ def main():
     parser.add_argument("--ticker", type=str, help="Stock/crypto ticker for quant + better news matching")
     parser.add_argument("--risk-only", action="store_true", help="Run only Risk Agent (legacy, not recommended)")
     parser.add_argument("--critic", action="store_true", help="Run Critic evaluation (legacy mode)")
+    parser.add_argument("--pdf", action="store_true", help="Also generate PDF report (requires weasyprint)")
     args = parser.parse_args()
 
     # Validate inputs
@@ -241,9 +241,8 @@ def main():
     # ═══════════════════════════════════════════════════════════════════════════
 
     if args.hypotheses:
-        print(f"\n{'#'*60}")
-        print("# AIRS Evidence-Driven Loop (Issue #9b+)")
-        print(f"{'#'*60}")
+        print(header("AIRS", "v0.3.7", "Evidence-Driven Investment Research"))
+        
 
         # Create agent instances
         quant_agent = QuantAgent()
@@ -268,6 +267,7 @@ def main():
             config={
                 'hypotheses': True,
                 'show_sources': args.show_sources,
+                'pdf': args.pdf,
             }
         )
 
@@ -275,86 +275,93 @@ def main():
         # FINAL RESULTS SUMMARY — DASHBOARD STYLE
         # ═══════════════════════════════════════════════════════════════════════
 
-        print(f"\n{'='*60}")
-        print("FINAL RESULTS SUMMARY")
-        print(f"{'='*60}")
-        print(f"Entity: {results['entity']}")
-        print(f"Asset Type: {results['asset_type']}")
-        print(f"Iterations: {results['iterations']}")
-        print(f"Halt reason: {results['halt_reason']}")
-        print(f"Evidence collected: {results['evidence_count']} items")
+                # COMPACT FINAL SUMMARY - Unicode boxes + ANSI colors
+        print("\n")
 
-        # ── Dashboard ──
+        # Meta
+        dims = []
+        if results.get('asset_profile', {}).get('quant_available'): dims.append("Quant")
+        if results.get('asset_profile', {}).get('technical_available'): dims.append("Technical")
+        if results.get('asset_profile', {}).get('business_available'): dims.append("Business")
+        print(status("*", f"Entity: {results['entity']}", f"Dimensions: {' * '.join(dims) if dims else 'None'}"))
+        print(status("*", f"Iterations: {results['iterations']}", f"Halt: {results['halt_reason']}"))
+        print(status("*", f"Evidence: {results['evidence_count']} items"))
+
+        # Dashboard
         dash = results.get('dashboard', {})
         if dash:
-            print(f"\n{'─'*50}")
-            print("AUDIT DASHBOARD")
-            print(f"{'─'*50}")
             dq = dash.get('data_quality', {})
             cov = dash.get('coverage', {})
             agr = dash.get('agreement', {})
             stab = dash.get('stability', {})
-            print(f"  Data Quality:  {dq.get('score', 0):.0%}")
-            print(f"  Coverage:      {cov.get('score', 0):.0%} ({cov.get('present', 0)}/{cov.get('required', 0)} features)")
-            print(f"  Agreement:     {agr.get('level', '?')} — {agr.get('details', '')}")
-            print(f"  Stability:     {stab.get('level', '?')} — {stab.get('details', '')}")
+            print(dashboard_panel(
+                dq.get('score', 0),
+                cov.get('score', 0),
+                agr.get('level', 'Unknown'),
+                stab.get('level', 'Unknown')
+            ))
 
-        # ── Directional Bias & Uncertainty ──
+        # Bias + Uncertainty
         hyp = results.get('hypotheses', {})
         if hyp:
             bias = hyp.get('directional_bias', {})
-            uncertainty = hyp.get('uncertainty', {})
+            unc = hyp.get('uncertainty', {})
             if bias:
-                print(f"\n{'─'*50}")
-                print("INVESTMENT THESIS")
-                print(f"{'─'*50}")
-                print(f"  Directional Bias: {bias.get('net', 'unknown').upper()}")
-                print(f"    Bullish strength: {bias.get('bull_strength', 0):.2f} ({bias.get('bull_evidence_count', 0)} claims)")
-                print(f"    Bearish strength: {bias.get('bear_strength', 0):.2f} ({bias.get('bear_evidence_count', 0)} claims)")
-                print(f"    Net score: {bias.get('directional_score', 0):+.2f}")
-            if uncertainty:
-                print(f"\n  Uncertainty: {uncertainty.get('level', 'Unknown')} ({uncertainty.get('score', 0):.0%})")
-                print(f"    {uncertainty.get('reason', '')}")
+                print(bias_panel(
+                    bias.get('net', 'unknown'),
+                    bias.get('bull_strength', 0),
+                    bias.get('bear_strength', 0),
+                    bias.get('directional_score', 0)
+                ))
+            if unc:
+                fac = unc.get('factors', {})
+                print(uncertainty_panel(
+                    unc.get('level', 'Unknown'),
+                    unc.get('score', 0),
+                    fac.get('scarcity', 0),
+                    fac.get('conflict', 0),
+                    fac.get('coverage', 0)
+                ))
 
-        # ── Active Questions ──
+        # Active Questions
         questions = results.get('active_questions', [])
         if questions:
-            print(f"\n{'─'*50}")
-            print(f"ACTIVE QUESTIONS ({len(questions)})")
-            print(f"{'─'*50}")
-            for q in questions:
-                print(f"  ? {q['question']}")
-                print(f"    Why it matters: {q['why_it_matters']}")
-                if q.get('can_deeper_data_answer'):
-                    print(f"    → Deeper data may resolve this")
-                else:
-                    print(f"    → Requires human judgment; data cannot answer")
+            print(f"\n{c(f'Active Questions: {len(questions)}', BOLD)}")
+            for i, q in enumerate(questions, 1):
+                print(question_line(
+                    i, q['question'],
+                    q.get('why_it_matters', ''),
+                    q.get('can_deeper_data_answer', False)
+                ))
 
-        # ── Unresolved Contradictions ──
+        # Contradictions
         unresolved = results.get('unresolved_contradictions', [])
         if unresolved:
-            print(f"\n{'─'*50}")
-            print(f"UNRESOLVED CONTRADICTIONS ({len(unresolved)})")
-            print(f"{'─'*50}")
-            for c in unresolved:
-                print(f"  ⚠️  [{c['severity'].upper()}] {c['name']}")
-                print(f"      {c['description']}")
-                print(f"      Question: {c.get('active_question', '')}")
+            print(f"\n{c(f'Unresolved Contradictions: {len(unresolved)}', BOLD, RED)}")
+            for c_item in unresolved:
+                print(contradiction_line(
+                    c_item['name'],
+                    c_item['description'],
+                    c_item.get('severity', 'medium')
+                ))
 
-        # ── Risk ──
+        # Risk
         if results.get('risk') and results['risk'].get('status') == 'complete':
             risk = results['risk']
-            print(f"\n{'─'*50}")
-            print("RISK ASSESSMENT")
-            print(f"{'─'*50}")
-            print(f"  Overall Risk: {risk['metrics']['overall_risk'].upper()}")
-            print(f"  Risks: {risk['metrics'].get('risk_count', 0)}, Warnings: {risk['metrics'].get('warning_count', 0)}")
+            overall = risk['metrics'].get('overall_risk', 'unknown').upper()
+            r_color = RED if overall == 'HIGH' else YELLOW if overall == 'MEDIUM' else GREEN
+            print(f"\n{c('Overall Risk:', BOLD)} {c(overall, BOLD, r_color)}")
+            print(f"  Risks: {risk['metrics'].get('risk_count', 0)}  |  Warnings: {risk['metrics'].get('warning_count', 0)}")
 
-        # ── Hypotheses Detail ──
-        if hyp:
-            print(format_hypotheses(hyp))
+        # Report path
+        report = results.get('report')
+        if report:
+            md_path = str(report.get('markdown_path', ''))
+            pdf_path = str(report.get('pdf_path', '')) if report.get('pdf_path') else None
+            print(report_footer(md_path, pdf_path))
 
-        print(f"\n{'='*60}")
+        # Detailed hypotheses (legacy, still useful)
+        
         return 0
 
     # ═══════════════════════════════════════════════════════════════════════════

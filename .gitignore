@@ -33,3 +33,10 @@ CONTEXT.md
 
 #prompt
 prompt.txt
+
+tomorrow.md
+todo.txt
+
+# Generated reports
+reports/output/
+*.pdf

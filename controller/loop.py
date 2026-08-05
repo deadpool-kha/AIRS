@@ -1,25 +1,3 @@
-"""
-controller/loop.py
-Issue #9b+: Evidence-Driven Loop Evolution
-
-Replaces the treadmill loop with a convergent evidence accumulation pattern.
-
-Architecture:
-    1. CAPABILITY PROBE: Detect which dimensions are available
-    2. BOOTSTRAP: Business + Technical run ONCE → Evidence Register
-    3. ITERATE: Quant runs tiered computation. Critic asks different questions per iteration:
-       Iteration 1: "Can I form a coherent directional view?"
-       Iteration 2: "Did deeper data change the story?"
-       Iteration 3: Circuit breaker
-    4. HALT: Dashboard-driven (coherent view, stable thesis, or max iterations)
-    5. OUTPUT: Risk + Hypotheses synthesize from final Evidence Register state
-
-Key changes:
-    - Critic now receives previous_critic_output for stability tracking
-    - Loop stores dashboard history in SQLite
-    - Display shows Data Quality / Coverage / Agreement / Stability dashboard
-    - Hypotheses render directional bias + uncertainty
-"""
 
 import json
 import sqlite3
@@ -27,9 +5,15 @@ import logging
 from typing import Dict, Callable, Any, Optional
 from datetime import datetime, timezone
 
+from utils.formatting import (
+    phase_header, iteration_header, halt_banner,
+    dashboard_panel, status, c,
+    RED, GREEN, YELLOW, BLUE, CYAN, WHITE, BOLD, DIM
+)
 from data.db import DB_PATH
 from core.evidence import EvidenceRegister
 from agents.critic import CriticAgent
+from reports.generator import generate_report
 
 logger = logging.getLogger(__name__)
 
@@ -164,9 +148,7 @@ class EvidenceDrivenLoop:
         config = config or {}
         ticker = ticker or entity
 
-        print(f"\n{'='*60}")
-        print(f"AIRS EVIDENCE-DRIVEN LOOP: {entity}")
-        print(f"{'='*60}")
+        print(f"\n{c('AIRS Evidence-Driven Loop', BOLD, CYAN)}  |  {c(entity, BOLD, WHITE)}")
 
         self._persist(entity, 'running')
 
@@ -186,11 +168,7 @@ class EvidenceDrivenLoop:
 
             self._persist(entity, 'completed')
 
-            print(f"\n{'='*60}")
-            print(f"LOOP COMPLETE: {self.iteration} iterations | {len(self.register)} evidence items")
-            print(f"Asset type: {self.asset_profile.get('asset_type', 'unknown')}")
-            print(f"Halt reason: {self.halt_reason}")
-            print(f"{'='*60}")
+            print(f"\n{c('OK Loop Complete', BOLD, GREEN)}  |  {self.iteration} iteration(s)  |  {len(self.register)} evidence items  |  {c(self.halt_reason, DIM)}")
 
             return results
 
@@ -201,9 +179,7 @@ class EvidenceDrivenLoop:
 
     def _probe_capabilities(self, entity: str, ticker: Optional[str], repo: Optional[str]) -> dict:
         """Phase 0: Capability Probe. Detects available dimensions."""
-        print(f"\n{'─'*50}")
-        print("PHASE 0: CAPABILITY PROBE")
-        print(f"{'─'*50}")
+        print(phase_header(0, "Capability Probe"))
 
         profile = {
             "entity": entity,
@@ -222,11 +198,11 @@ class EvidenceDrivenLoop:
             if info and info.get("regularMarketPrice") is not None:
                 profile["quant_available"] = True
                 profile["ticker"] = probe_ticker
-                print(f"  ✓ Quant available: ticker '{probe_ticker}' resolved")
+                print(status(c("OK", GREEN), "Quant", f"ticker '{probe_ticker}' resolved"))
             else:
-                print(f"  ✗ Quant unavailable: no market data for '{probe_ticker}'")
+                print(status(c("X", DIM), "Quant", f"no market data for '{probe_ticker}'"))
         except Exception as e:
-            print(f"  ✗ Quant unavailable: {str(e)[:60]}")
+            print(status(c("X", DIM), "Quant", f"unavailable: {str(e)[:60]}"))
 
         if repo:
             try:
@@ -235,16 +211,16 @@ class EvidenceDrivenLoop:
                 if r.status_code == 200:
                     profile["technical_available"] = True
                     profile["repo"] = repo
-                    print(f"  ✓ Technical available: repo '{repo}' found")
+                    print(status(c("OK", GREEN), "Technical", f"repo '{repo}' found"))
                 else:
-                    print(f"  ✗ Technical unavailable: GitHub returned {r.status_code}")
+                    print(status(c("X", DIM), "Technical", f"GitHub returned {r.status_code}"))
             except Exception as e:
-                print(f"  ✗ Technical unavailable: {str(e)[:60]}")
+                print(status(c("X", DIM), "Technical", f"unavailable: {str(e)[:60]}"))
         else:
-            print(f"  ~ Technical: no repo provided, skipping probe")
+            print(status(c("~", DIM), "Technical", "no repo provided, skipping probe"))
 
         if profile["quant_available"] and profile["technical_available"]:
-            profile["asset_type"] = "crypto_with_repo"
+            profile["asset_type"] = "public_stock_with_repo"
         elif profile["quant_available"]:
             profile["asset_type"] = "public_stock"
         elif profile["technical_available"]:
@@ -252,7 +228,7 @@ class EvidenceDrivenLoop:
         else:
             profile["asset_type"] = "private_company"
 
-        print(f"  → Asset type: {profile['asset_type']}")
+        print(status(c("->", BLUE), "Asset type", profile['asset_type']))
         return profile
 
     def _display_profile(self, profile: dict):
@@ -265,65 +241,59 @@ class EvidenceDrivenLoop:
 
     def _bootstrap(self, entity: str, ticker: str, repo: str) -> None:
         """Phase 1: Bootstrap. Business and Technical run ONCE."""
-        print(f"\n{'─'*50}")
-        print("PHASE 1: BOOTSTRAP (Business + Technical)")
-        print(f"{'─'*50}")
+        print(phase_header(1, "Bootstrap (Business + Technical)"))
 
         if self.business_runner:
-            print(f"→ Running business analysis for {entity}...")
+            print(status(">", "Business", f"analyzing {entity}..."))
             try:
                 business_output = self.business_runner()
                 self.register.add("business_context", business_output, source="business")
-                status = business_output.get("status", "unknown")
+                biz_status = business_output.get("status", "unknown")
                 articles = business_output.get("metrics", {}).get("signal_count", 0)
-                print(f"  Business: {status} ({articles} signals) → Evidence Register")
+                print(status(c("OK", GREEN), "Business", f"{articles} signals -> Evidence Register"))
             except Exception as e:
-                print(f"  ⚠️  Business agent failed: {e}")
+                print(status(c("!", YELLOW), "Business", f"failed: {e}"))
                 self.register.add("business_context", {
                     "status": "failed", "error": str(e), "confidence": 0.0
                 }, source="business")
         else:
-            print("  Business runner not configured — skipping")
+            print("  Business runner not configured - skipping")
 
         if self.technical_runner and self.asset_profile.get("technical_available"):
-            print(f"→ Running technical analysis...")
+            print(status(">", "Technical", "analyzing..."))
             try:
                 technical_output = self.technical_runner()
                 if technical_output:
                     self.register.add("technical_context", technical_output, source="technical")
-                    status = technical_output.get("status", "unknown")
-                    print(f"  Technical: {status} → Evidence Register")
+                    tech_status = technical_output.get("status", "unknown")
+                    print(status(c("OK", GREEN), "Technical", f"{tech_status} -> Evidence Register"))
                 else:
-                    print("  Technical runner returned None — skipping")
+                    print(status(c("~", DIM), "Technical", "runner returned None - skipping"))
             except Exception as e:
-                print(f"  ⚠️  Technical agent failed: {e}")
+                print(status(c("!", YELLOW), "Technical", f"failed: {e}"))
                 self.register.add("technical_context", {
                     "status": "failed", "error": str(e), "confidence": 0.0
                 }, source="technical")
         else:
             if not self.asset_profile.get("technical_available"):
-                print("  Technical: unavailable for this asset type → skipped")
+                print(status(c("~", DIM), "Technical", "unavailable for this asset type -> skipped"))
             else:
-                print("  Technical runner not configured — skipping")
+                print("  Technical runner not configured - skipping")
 
-        print(f"  Bootstrap complete. Register has {len(self.register)} items.")
+        print(status(c("OK", GREEN), "Bootstrap complete", f"{len(self.register)} evidence items"))
 
     def _iterative_loop(self, entity: str, ticker: str) -> None:
         """Phase 2: Iterative Evidence Accumulation (iteration-aware)."""
-        print(f"\n{'─'*50}")
-        print("PHASE 2: ITERATIVE EVIDENCE ACCUMULATION")
-        print(f"{'─'*50}")
+        print(phase_header(2, "Iterative Evidence Accumulation"))
 
         for i in range(MAX_ITERATIONS):
             self.iteration = i + 1
-            print(f"\n{'─'*40}")
-            print(f"ITERATION {self.iteration}/{MAX_ITERATIONS}")
-            print(f"{'─'*40}")
+            print(iteration_header(self.iteration, MAX_ITERATIONS))
 
             # Determine tier and data depth
             tier = self._determine_tier()
             period = self._get_tier_period(tier)
-            print(f"→ Quant Tier {tier} ({period} data depth)")
+            print(status(">", f"Quant Tier {tier}", f"{period} data depth"))
 
             # Run quant agent
             if self.quant_agent and self.asset_profile.get("quant_available"):
@@ -353,20 +323,20 @@ class EvidenceDrivenLoop:
                         new_features.append(key)
 
                     if new_features:
-                        print(f"  Quant tier {tier} added/upgraded: {new_features}")
+                        print(status(c("OK", GREEN), f"Quant Tier {tier}", f"upgraded {len(new_features)} features"))
                     else:
-                        print(f"  Quant tier {tier}: nothing new to compute")
+                        print(status(c("~", DIM), f"Quant Tier {tier}", "no new features"))
 
                 except Exception as e:
-                    print(f"  ⚠️  Quant agent failed: {e}")
+                    print(status(c("!", YELLOW), "Quant", f"failed: {e}"))
             else:
                 if not self.asset_profile.get("quant_available"):
-                    print("  Quant: unavailable for this asset type → skipped")
+                    print(status(c("~", DIM), "Quant", "unavailable for this asset type -> skipped"))
                 else:
-                    print("  Quant agent not configured — skipping")
+                    print("  Quant agent not configured - skipping")
 
             # Run critic (with previous output for stability tracking)
-            print(f"→ Running evidence audit...")
+            print(status(">", "Critic", "evaluating evidence..."))
             try:
                 critic_output = self.critic_agent.evaluate_evidence(
                     entity=entity,
@@ -379,7 +349,7 @@ class EvidenceDrivenLoop:
                 self._display_critic(critic_output)
 
             except Exception as e:
-                print(f"  ⚠️  Critic failed: {e}")
+                print(status(c("!", YELLOW), "Critic", f"failed: {e}"))
                 critic_output = {
                     "halt_decision": {"should_iterate": False, "reason": "critic_error", "recommendation": "insufficient_halt"},
                     "dashboard": {},
@@ -394,19 +364,19 @@ class EvidenceDrivenLoop:
             if not halt.get("should_iterate", True):
                 self.halt_reason = halt.get("reason", "unknown")
                 narrative = halt.get("narrative", "Halting.")
-                print(f"\n✅ HALT: {narrative}")
+                print(halt_banner(self.halt_reason, narrative, circuit=False))
                 break
 
             # Circuit breaker
             if self.iteration >= MAX_ITERATIONS:
                 self.halt_reason = "max_iterations"
-                print(f"\n⛔ HALT: Circuit breaker hit ({MAX_ITERATIONS} iterations)")
+                print(halt_banner("max_iterations", f"Circuit breaker ({MAX_ITERATIONS} iterations)", circuit=True))
                 break
 
             # Continue to next tier
-            print(f"   {halt.get('narrative', 'Continuing to next tier.')}")
+            print(f"   {c('Continuing to next tier...', DIM)}")
 
-        print(f"\n  Loop ended: {self.iteration} iterations, {len(self.register)} evidence items")
+        print(status(c("*", BLUE), "Loop ended", f"{self.iteration} iterations | {len(self.register)} evidence items"))
 
     def _determine_tier(self) -> int:
         return self.iteration
@@ -416,86 +386,116 @@ class EvidenceDrivenLoop:
         return periods.get(tier, "3mo")
 
     def _display_critic(self, result: dict):
-        """Display critic audit results — DASHBOARD STYLE."""
-        print(f"\n{'='*50}")
-        print(f"EVIDENCE AUDIT (Iteration {result['iteration']})")
-        print(f"{'='*50}")
-
+        """Display critic audit results - compact dashboard."""
         dash = result.get("dashboard", {})
         halt = result.get("halt_decision", {})
-
-        # Dashboard
         dq = dash.get("data_quality", {})
         cov = dash.get("coverage", {})
         agr = dash.get("agreement", {})
         stab = dash.get("stability", {})
 
-        print(f"Asset type: {result['asset_type']}")
-        print(f"Data Quality:  {dq.get('score', 0):.0%}")
-        print(f"Coverage:      {cov.get('score', 0):.0%} ({cov.get('present', 0)}/{cov.get('required', 0)} features)")
-        print(f"Agreement:     {agr.get('level', '?')} ({agr.get('details', '')})")
-        print(f"Stability:     {stab.get('level', '?')} — {stab.get('details', '')}")
+        print(dashboard_panel(
+            dq.get('score', 0),
+            cov.get('score', 0),
+            agr.get('level', 'Unknown'),
+            stab.get('level', 'Unknown')
+        ))
 
-        # Active questions
         questions = result.get("active_questions", [])
         if questions:
-            print(f"\nActive Questions ({len(questions)}):")
+            print(f"\n{c(f'Active Questions: {len(questions)}', BOLD)}")
             for q in questions:
-                print(f"  ? {q['question']}")
-                print(f"    Why: {q['why_it_matters']}")
-                if q.get('can_deeper_data_answer'):
-                    print(f"    → Deeper data may answer this")
-                else:
-                    print(f"    → Deeper data will NOT help; flag for human review")
+                icon = c(">", CYAN) if q.get('can_deeper_data_answer') else c("?", YELLOW)
+                print(f"  {icon} {c(q['question'], BOLD)}")
+                print(f"     {c(q.get('why_it_matters', ''), DIM)}")
 
-        # Contradictions
         unresolved = result.get("unresolved_contradictions", [])
         if unresolved:
-            print(f"\nUnresolved Contradictions ({len(unresolved)}):")
-            for c in unresolved:
-                print(f"  ⚠️  [{c['severity'].upper()}] {c['name']}: {c['description']}")
+            print(f"\n{c(f'Contradictions: {len(unresolved)}', BOLD, RED)}")
+            for c_item in unresolved:
+                sev_color = RED if c_item.get('severity') == 'high' else YELLOW
+                print(f"  {c('!', sev_color)}  [{c(c_item['severity'].upper(), BOLD, sev_color)}] {c_item['name']}")
+                print(f"     {c(c_item['description'], DIM)}")
 
-        # Decision
-        print(f"\nDecision: {halt.get('recommendation', 'unknown').upper()}")
-        print(f"Reason:   {halt.get('reason', 'unknown')}")
-        print(f"Narrative: {halt.get('narrative', '')}")
-        print(f"{'='*50}")
+        rec = halt.get('recommendation', 'unknown').upper()
+        rec_color = GREEN if rec == 'COMPLETE' else YELLOW
+        print(f"\n{c('Decision:', BOLD)} {c(rec, BOLD, rec_color)}  |  {c(halt.get('reason', ''), DIM)}")
+        if halt.get('narrative'):
+            print(f"   {c(halt['narrative'], DIM)}")
 
     def _final_output(self, entity: str, ticker: str, config: dict) -> dict:
         """Phase 3: Final Output Generation."""
-        print(f"\n{'─'*50}")
-        print("PHASE 3: FINAL OUTPUT GENERATION")
-        print(f"{'─'*50}")
+        print(phase_header(3, "Final Output Generation"))
 
         agent_outputs = self._build_legacy_agent_outputs()
 
         # Risk Agent
         risk_output = None
         if self.risk_agent:
-            print(f"→ Generating risk assessment...")
+            print(status(">", "Risk Assessment", "analyzing..."))
             try:
                 risk_output = self.risk_agent.analyze(entity=entity, agent_outputs=agent_outputs)
                 overall = risk_output.get('metrics', {}).get('overall_risk', 'unknown')
-                print(f"  Risk: {overall.upper()}")
+                r_color = RED if overall == 'high' else YELLOW if overall == 'medium' else GREEN
+                print(status(c("OK", r_color), "Risk", f"{overall.upper()}"))
             except Exception as e:
-                print(f"  ⚠️  Risk agent failed: {e}")
+                print(status(c("!", YELLOW), "Risk", f"failed: {e}"))
                 risk_output = {"status": "failed", "error": str(e)}
 
         # Hypotheses
         hypotheses_output = None
         if config.get('hypotheses') and self.hypotheses_runner:
-            print(f"→ Generating hypotheses...")
+            print(status(">", "Hypotheses", "generating..."))
             try:
                 hypotheses_output = self.hypotheses_runner(entity, self.register)
                 from reports.hypothesis import format_hypotheses
                 print(format_hypotheses(hypotheses_output))
             except Exception as e:
-                print(f"  ⚠️  Hypothesis generation failed: {e}")
+                print(status(c("!", YELLOW), "Hypotheses", f"failed: {e}"))
                 hypotheses_output = {"status": "failed", "error": str(e)}
 
         # Compile final results
         latest_critic = self.critic_history[-1] if self.critic_history else {}
         dash = latest_critic.get("dashboard", {})
+
+        # Generate investment memo (Issue #10)
+        report_output = None
+        if config.get('hypotheses'):
+            print(status(">", "Report", "generating investment memo..."))
+            try:
+                report_output = generate_report(
+                    {
+                        "entity": entity,
+                        "ticker": ticker,
+                        "asset_type": self.asset_profile.get("asset_type") if self.asset_profile else "unknown",
+                        "iterations": self.iteration,
+                        "halt_reason": self.halt_reason,
+                        "evidence_count": len(self.register),
+                        "evidence_snapshot": self.register.snapshot(exclude_types=("DataFrame",)),
+                        "dashboard": latest_critic.get("dashboard", {}),
+                        "hypotheses": hypotheses_output,
+                        "risk": risk_output,
+                        "active_questions": latest_critic.get("active_questions", []),
+                        "unresolved_contradictions": latest_critic.get("unresolved_contradictions", []),
+                        "evidence_by_source": {
+                            "business": list(self.register.list_by_source("business").keys()),
+                            "technical": list(self.register.list_by_source("technical").keys()),
+                            "quant": list(self.register.list_by_source("quant").keys()),
+                        },
+                        "evidence_by_tier": {
+                            1: list(self.register.list_by_tier(1).keys()),
+                            2: list(self.register.list_by_tier(2).keys()),
+                            3: list(self.register.list_by_tier(3).keys()),
+                        },
+                    },
+                    output_dir=config.get("report_dir", "reports/output"),
+                    pdf=config.get("pdf", False),
+                )
+                print(status(c("OK", GREEN), "Report saved", str(report_output['markdown_path'])))
+                if report_output['pdf_path']:
+                    print(status(c("OK", GREEN), "PDF saved", str(report_output['pdf_path'])))
+            except Exception as e:
+                print(status(c("!", YELLOW), "Report", f"failed: {e}"))
 
         results = {
             "entity": entity,
@@ -532,6 +532,7 @@ class EvidenceDrivenLoop:
             "agent_outputs": agent_outputs,
             "evidence_snapshot": self.register.snapshot(exclude_types=("DataFrame",)),
             "critic_history": self.critic_history,
+            "report": report_output,
         }
 
         return results

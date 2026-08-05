@@ -337,3 +337,25 @@
 - Risk Agent still reads legacy `agent_outputs` dict via bridge; does not read directly from Evidence Register yet
 - Hypothesis strength thresholds (0.35, 0.45, 0.60, 0.75) are intuitive, not validated against historical data
 - Agreement logic treats "mixed signals" neutral the same as "missing data" neutral; could be tightened
+
+
+## [0.3.7] - 2026-08-05
+
+### Added
+- `reports/generator.py` — Issue #10: Professional investment memo generator
+  - Jinja2-templated Markdown reports with 7 sections:
+    - Executive Summary, Audit Dashboard, Investment Thesis, Evidence Register Summary,
+      Risk Assessment, Active Questions & Unresolved Contradictions, Appendix
+  - Optional PDF export via `--pdf` flag (requires weasyprint; graceful fallback if missing)
+  - `reports/templates/report.md.j2` — clean separation of logic and presentation
+- Report auto-generated at end of `--hypotheses` workflow
+- Report output attached to loop `results` dict for programmatic access
+
+### Changed
+- `controller/loop.py` — Integrated `generate_report()` into `_final_output()`
+- `main.py` — Added `--pdf` CLI flag; updated banner to v0.3.7
+
+### Verified
+- AAPL: Full 3-iteration loop with all dimensions (Quant + Business + Technical)
+- Report correctly renders: raw quant metrics, business signals, technical health scores
+- PDF gracefully skips when weasyprint unavailable
