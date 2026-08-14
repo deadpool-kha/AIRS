@@ -15,13 +15,16 @@ import pandas as pd
 import time
 
 
-def fetch_stock_data(ticker: str, period: str = "3mo") -> pd.DataFrame:
+def fetch_stock_data(ticker: str, period: str = "3mo", start: str = None, end: str = None) -> pd.DataFrame:
     """
     Fetches historical stock data from Yahoo Finance.
     
     Args:
         ticker: Stock symbol, e.g. "AAPL" or "BTC-USD"
-        period: How far back. Options: "1d", "5d", "1mo", "3mo", "6mo", "1y", "2y", "5y", "10y", "ytd", "max"
+        period: How far back. Used when start/end not provided.
+                Options: "1d", "5d", "1mo", "3mo", "6mo", "1y", "2y", "5y", "10y", "ytd", "max"
+        start: Start date in YYYY-MM-DD format. Overrides period if provided.
+        end: End date in YYYY-MM-DD format. Overrides period if provided.
     
     Returns:
         pandas DataFrame with columns: Open, High, Low, Close, Volume
@@ -30,18 +33,18 @@ def fetch_stock_data(ticker: str, period: str = "3mo") -> pd.DataFrame:
     Raises:
         ValueError: If no data returned or ticker invalid
     
-    Why we don't catch all exceptions:
-    - Let the caller (main.py) decide what to do with failures.
-    - If we swallow errors here, main.py can't show the user what went wrong.
+    Why start/end?
+    - record_outcome() needs exact date ranges for historical price lookup.
+    - period is relative (e.g., "3mo" from today), start/end are absolute.
     """
-    print(f"Fetching {ticker} for period: {period}")
-    
-    # yfinance.Ticker creates an object that represents the stock
     stock = yf.Ticker(ticker)
     
-    # .history() returns a DataFrame with OHLCV data
-    # auto_adjust=True adjusts for splits and dividends
-    df = stock.history(period=period, auto_adjust=True)
+    if start and end:
+        print(f"Fetching {ticker} from {start} to {end}")
+        df = stock.history(start=start, end=end, auto_adjust=True)
+    else:
+        print(f"Fetching {ticker} for period: {period}")
+        df = stock.history(period=period, auto_adjust=True)
     
     # Defensive check: yfinance sometimes returns empty DataFrames silently
     if df.empty:

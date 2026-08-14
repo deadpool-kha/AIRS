@@ -359,3 +359,37 @@
 - AAPL: Full 3-iteration loop with all dimensions (Quant + Business + Technical)
 - Report correctly renders: raw quant metrics, business signals, technical health scores
 - PDF gracefully skips when weasyprint unavailable
+
+
+## [0.3.8] - 2026-08-13
+
+### Added
+- Phase 9 — Audit Trail & Backtesting (Infrastructure Complete)
+  - `data/audit.py` — Session persistence, outcome recording, accuracy statistics
+    - `save_session()` — Persists research sessions to `research_sessions` table
+    - `record_outcome()` — Fetches 30-day price change, computes graded accuracy score (-1.0 to +1.0)
+    - `get_accuracy_stats()` — Aggregates accuracy by asset type, uncertainty level, evidence strength, sector
+    - `NumpyEncoder` — Safe JSON serialization for evidence snapshots
+  - `config/watchlist.json` — 30 entities across 4 categories (tech_blue_chip, tech_growth, crypto, startups)
+  - `config/sectors.py` — Sector canonicalization with fuzzy matching and aliases
+  - New CLI flags in `main.py`:
+    - `--watchlist &lt;category&gt;` — Batch analyze watchlist categories
+    - `--sector &lt;sector&gt;` — Tag session with canonical sector (strict validation)
+    - `--list-sectors` — Display valid sector options
+    - `--audit` — Self-healing audit: records missing outcomes, displays stats
+    - `--audit-force` — Re-evaluates ALL historical sessions
+    - `--list-sessions` — Display all research sessions
+
+### Changed
+- `data/db.py` — Added `research_sessions` and `research_outcomes` tables with indexes; enabled `PRAGMA foreign_keys = ON`
+- `data/fetcher.py` — `fetch_stock_data()` now supports `start`/`end` date parameters for historical price lookup
+- `controller/loop.py` — Calls `save_session()` at end of run; passes `sector` into results
+
+### Fixed
+- **CRITICAL:** Asset type mismatch — `public_stock_with_repo` added to `ASSET_PROFILES` in `agents/critic.py`
+- SQLite foreign keys now enforced (was disabled by default)
+- Numpy serialization in evidence snapshots handled safely
+
+### Known Limitations
+- 30-day backtesting requires 30 days to pass before outcomes can be scored
+- Historical session backfill (35 sessions) not yet performed — audit stats will populate as sessions age

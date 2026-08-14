@@ -1,0 +1,42 @@
+{
+  "watchlists": {
+    "tech_blue_chip": [
+      {"entity": "Apple", "ticker": "AAPL", "repo": "apple/swift", "sector": "consumer-tech"},
+      {"entity": "NVIDIA", "ticker": "NVDA", "repo": "NVIDIA/open-gpu-kernel-modules", "sector": "semiconductors"},
+      {"entity": "Microsoft", "ticker": "MSFT", "repo": "microsoft/vscode", "sector": "enterprise-software"},
+      {"entity": "Google", "ticker": "GOOGL", "repo": "google/go-github", "sector": "consumer-tech"},
+      {"entity": "Meta", "ticker": "META", "repo": "facebook/react", "sector": "consumer-tech"},
+      {"entity": "Amazon", "ticker": "AMZN", "repo": "aws/aws-sdk-java", "sector": "cloud-infrastructure"},
+      {"entity": "Tesla", "ticker": "TSLA", "repo": "teslamotors/fleet-telemetry", "sector": "ev-energy"},
+      {"entity": "Netflix", "ticker": "NFLX", "repo": "Netflix/maestro", "sector": "streaming"},
+      {"entity": "Salesforce", "ticker": "CRM", "repo": "salesforce/bazel-springboot-rule", "sector": "saas"},
+      {"entity": "Oracle", "ticker": "ORCL", "repo": "oracle/graal", "sector": "enterprise-software"}
+    ],
+    "tech_growth": [
+      {"entity": "Palantir", "ticker": "PLTR", "repo": "palantir/blueprint", "sector": "data-analytics"},
+      {"entity": "Snowflake", "ticker": "SNOW", "repo": "snowflakedb/snowflake-connector-python", "sector": "cloud-infrastructure"},
+      {"entity": "CrowdStrike", "ticker": "CRWD", "repo": "CrowdStrike/falconpy", "sector": "cybersecurity"},
+      {"entity": "Cloudflare", "ticker": "NET", "repo": "cloudflare/workers-sdk", "sector": "cloud-infrastructure"},
+      {"entity": "Datadog", "ticker": "DDOG", "repo": "DataDog/datadog-agent", "sector": "data-analytics"},
+      {"entity": "MongoDB", "ticker": "MDB", "repo": "mongodb/mongo", "sector": "database"},
+      {"entity": "Shopify", "ticker": "SHOP", "repo": "Shopify/liquid", "sector": "e-commerce"},
+      {"entity": "Uber", "ticker": "UBER", "repo": "uber-go/guide", "sector": "mobility"},
+      {"entity": "Airbnb", "ticker": "ABNB", "repo": "airbnb/javascript", "sector": "consumer-tech"},
+      {"entity": "Spotify", "ticker": "SPOT", "repo": "spotify/luigi", "sector": "streaming"}
+    ],
+    "crypto": [
+      {"entity": "Bitcoin", "ticker": "BTC-USD", "repo": "bitcoin/bitcoin", "sector": "l1-blockchain"},
+      {"entity": "Ethereum", "ticker": "ETH-USD", "repo": "ethereum/go-ethereum", "sector": "l1-blockchain"},
+      {"entity": "Solana", "ticker": "SOL-USD", "repo": "anza-xyz/agave", "sector": "l1-blockchain"}
+    ],
+    "startups": [
+      {"entity": "Anthropic", "repo": "anthropics/anthropic-sdk-python", "sector": "generative-ai"},
+      {"entity": "OpenAI", "repo": "openai/openai-python", "sector": "generative-ai"},
+      {"entity": "LangChain", "repo": "langchain-ai/langchain", "sector": "ai-infrastructure"},
+      {"entity": "Supabase", "repo": "supabase/supabase", "sector": "backend-as-a-service"},
+      {"entity": "Vercel", "repo": "vercel/next.js", "sector": "frontend-infrastructure"},
+      {"entity": "Mistral AI", "repo": "mistralai/client-python", "sector": "generative-ai"},
+      {"entity": "Replicate", "repo": "replicate/cog", "sector": "ai-infrastructure"}
+    ]
+  }
+}

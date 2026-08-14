@@ -279,6 +279,32 @@ python main.py --entity AAPL --hypotheses
 - No runtime errors
 
 ---
+## Test Case 5 — Batch Watchlist Analysis
+
+### Command
+
+```bash
+python main.py --watchlist tech_blue_chip --hypotheses
+```
+### Expected Behavior
+- Loads 10 entities from config/watchlist.json
+- Runs full evidence-driven loop for each entity sequentially
+- Saves each session to research_sessions
+- Displays batch summary table with entity, bias, uncertainty, iterations
+- No runtime errors
+
+## Test Case 6 — Audit Trail
+### Command
+```bash 
+python main.py --audit
+```
+### Expected Behavior
+- Finds sessions older than 30 days with no matching research_outcomes row
+- Fetches baseline and 30-day prices via yfinance
+- Computes price_change_30d and accuracy_score
+- Inserts into research_outcomes
+- Displays grouped statistics by asset type, uncertainty, evidence strength, sector
+- Self-healing: skips sessions without tickers, handles missing data gracefully
 
 # Success Checklist
 
@@ -299,7 +325,7 @@ A successful research session should satisfy the following.
 
 Phase 9 introduces historical validation through the Audit Trail.
 
-Every completed research session will be stored for future evaluation.
+Every completed research session is persisted for future evaluation.
 
 ---
 
@@ -309,7 +335,7 @@ Every completed research session will be stored for future evaluation.
 Research Session
         │
         ▼
-Save Evidence Snapshot
+Save Evidence Snapshot → research_sessions
         │
         ▼
 Wait 30 Days
@@ -321,25 +347,42 @@ Fetch Actual Market Outcome
 Compare Against Original Hypothesis
         │
         ▼
-Compute Historical Accuracy
+Compute Graded Accuracy Score (-1.0 to +1.0)
 ```
-
----
-
 ## Metrics to Measure
+The Audit Trail evaluates:
 
-The Audit Trail will evaluate:
+- Directional bias accuracy — Did bullish/bearish/neutral match the 30-day price move?
+- Accuracy by asset type — public_stock vs crypto vs open_source
+- Accuracy by uncertainty level — Low uncertainty should correlate with higher accuracy
+- Accuracy by evidence strength — Speculative vs Tentative vs Convicted
+- Accuracy by sector — Semiconductors, cloud-infrastructure, etc.
+- Long-term research consistency — Does the system systematically over/underweight certain signals?
 
-- Directional bias accuracy
-- Accuracy by asset type
-- Accuracy by uncertainty level
-- Accuracy by evidence coverage
-- Accuracy by signal combination
-- Long-term research consistency
+## Graded Scoring (Not Binary)
+The system uses a graded score from -1.0 to +1.0:
+| Scenario     | Price Change | Score | Interpretation                        |
+| ------------ | ------------ | ----- | ------------------------------------- |
+| Bullish +5%  | +5%          | +1.00 | Perfect directional call              |
+| Bullish +10% | +10%         | +1.00 | Capped at +1.0                        |
+| Bullish -5%  | -5%          | -1.00 | Completely wrong                      |
+| Bearish -3%  | -3%          | +0.60 | Partially correct (magnitude matters) |
+| Neutral ±1%  | +1%          | +1.00 | Neutral thesis validated              |
+| Neutral ±5%  | +5%          | +0.40 | Partial penalty for large move        |
 
-This allows AIRS to evaluate whether its research process produces useful long-term outcomes.
+This is more informative than binary correct/incorrect.
 
----
+## Current Status
+| Milestone                                      | Status        |
+| ---------------------------------------------- | ------------- |
+| Session persistence (`research_sessions`)      | ✅ Implemented |
+| Outcome recording (`research_outcomes`)        | ✅ Implemented |
+| Graded scoring formula                         | ✅ Implemented |
+| `--audit` CLI command                          | ✅ Implemented |
+| 30-day aging wait                              | ⏳ Time-gated  |
+| Historical backfill (35 sessions)              | ⏳ Deferred    |
+| Statistical significance (20+ scored sessions) | ⏳ Pending     |
+
 
 # Current Limitations
 

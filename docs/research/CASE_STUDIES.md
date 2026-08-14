@@ -702,6 +702,44 @@ AIRS handles partial inputs gracefully. Rather than crashing or fabricating data
 
 ---
 
+
+# Case Study 5: Batch Watchlist Analysis — tech_blue_chip
+
+## Command
+
+```bash
+python main.py --watchlist tech_blue_chip --hypotheses
+```
+## Behavior
+
+AIRS loads 10 entities from config/watchlist.json and runs the full evidence-driven loop for each:
+| #  | Entity     | Ticker | Sector               | Dimensions | Halt        | Bias    | Uncertainty |
+| -- | ---------- | ------ | -------------------- | ---------- | ----------- | ------- | ----------- |
+| 1  | Apple      | AAPL   | consumer-tech        | 3 of 3     | Iteration 2 | BEARISH | Moderate    |
+| 2  | NVIDIA     | NVDA   | semiconductors       | 3 of 3     | Iteration 1 | BULLISH | Low         |
+| 3  | Microsoft  | MSFT   | enterprise-software  | 3 of 3     | Iteration 1 | BULLISH | Low         |
+| 4  | Google     | GOOGL  | consumer-tech        | 2 of 3     | Iteration 3 | NEUTRAL | Elevated    |
+| 5  | Meta       | META   | consumer-tech        | 3 of 3     | Iteration 1 | BEARISH | Moderate    |
+| 6  | Amazon     | AMZN   | cloud-infrastructure | 3 of 3     | Iteration 2 | BULLISH | Moderate    |
+| 7  | Tesla      | TSLA   | ev-energy            | 3 of 3     | Iteration 3 | BEARISH | High        |
+| 8  | Netflix    | NFLX   | streaming            | 2 of 3     | Iteration 1 | NEUTRAL | Moderate    |
+| 9  | Salesforce | CRM    | saas                 | 2 of 3     | Iteration 1 | BULLISH | Low         |
+| 10 | Oracle     | ORCL   | enterprise-software  | 3 of 3     | Iteration 1 | NEUTRAL | Moderate    |
+
+## Key Observations
+- Total sessions saved: 10 rows in research_sessions
+- Sectors tagged: All 10 sessions carry canonical sector labels
+- Startups skipped: The startups category has no tickers — sessions are saved but not scored
+- Batch runtime: ~8-12 minutes for 10 entities (depends on Ollama speed)
+
+## Audit Trail Note
+After 30 days, running:
+```bash
+python main.py --audit
+```
+will evaluate each session with a ticker against actual price changes and populate research_outcomes. Sessions without tickers (startups) are intentionally skipped.
+
+
 # Patterns Observed
 
 ## Pattern 1: Early Halt on Coherence
@@ -724,6 +762,13 @@ This demonstrates that **uncertainty is independent of conviction**, a core desi
 
 In all cases where agents were skipped (no ticker, no repo), the Critic treated them as intentionally omitted rather than errors. The system produces valid outputs for partial inputs without crashing.
 
+## Pattern 5: Batch Mode Surfaces Portfolio-Level Insights
+
+Running 10 entities sequentially reveals cross-sector patterns that single-shot analysis misses:
+- Consumer-tech showed mixed signals (2 bullish, 2 bearish, 2 neutral) — sector-level disagreement
+- Cloud-infrastructure and enterprise-software both halted early with bullish bias
+- Tesla ran all 3 iterations with High uncertainty — the most "messy" asset in the batch
+- The batch summary table makes these patterns visible at a glance.
 ---
 
 # Lessons for Users

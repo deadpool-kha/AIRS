@@ -33,6 +33,18 @@ logger = logging.getLogger(__name__)
 # ASSET PROFILES (unchanged — asset-type-aware sufficiency)
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
+# TODO: Phase 10 — implement canonical asset type mapping to avoid duplication
+_public_repo_profile = {
+    "required_dimensions": ["quant", "technical", "business"],
+    "optional_dimensions": [],
+    "impossible_dimensions": [],
+    "quant_min_days": 180,
+    "technical_min_commits": 50,
+    "business_min_articles": 8,
+    "description": "Public asset with traded token/stock and public repository",
+}
+
 ASSET_PROFILES = {
     "public_stock": {
         "required_dimensions": ["quant", "business"],
@@ -42,15 +54,8 @@ ASSET_PROFILES = {
         "business_min_articles": 8,
         "description": "Publicly traded company with stock ticker",
     },
-    "crypto_with_repo": {
-        "required_dimensions": ["quant", "technical", "business"],
-        "optional_dimensions": [],
-        "impossible_dimensions": [],
-        "quant_min_days": 180,
-        "technical_min_commits": 50,
-        "business_min_articles": 8,
-        "description": "Crypto project with traded token and public repository",
-    },
+    "crypto_with_repo": _public_repo_profile,
+    "public_stock_with_repo": _public_repo_profile,
     "open_source_or_pre_launch": {
         "required_dimensions": ["technical", "business"],
         "optional_dimensions": ["quant"],
@@ -67,7 +72,6 @@ ASSET_PROFILES = {
         "description": "Private company with no public financials or code",
     },
 }
-
 # ═══════════════════════════════════════════════════════════════════════════════
 # FEATURE TRUSTWORTHINESS (minimum data points for statistical validity)
 # ═══════════════════════════════════════════════════════════════════════════════

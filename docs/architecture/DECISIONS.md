@@ -767,3 +767,93 @@ Rejected alternatives:
 Revisit if: Need dynamic template selection per asset type or multi-format output (HTML, DOCX)
 
 ---
+
+# Decision 033
+
+## Implement Audit Trail with graded scoring
+
+Date: 2026-08-13
+
+Decision:
+Store every research session in `research_sessions` and compare against actual 30-day market outcomes using a graded score (-1.0 to +1.0), not binary correct/incorrect.
+
+Reason:
+- Binary correct/incorrect loses signal. A bearish bias with -3% move is partially correct, not a "loss."
+- Graded scoring rewards directional magnitude: +5% on bullish = perfect, +10% still = perfect (capped), -5% = completely wrong.
+- Neutral is not a free pass: big moves against neutral incur penalty.
+
+Implementation:
+- `score_outcome(bias, price_change_30d)` in `data/audit.py`
+- Bullish: `min(1.0, price_change / 5.0)`
+- Bearish: `min(1.0, -price_change / 5.0)`
+- Neutral: `1.0` if |move| ≤ 2%, else `1.0 - (|move| - 2.0) / 5.0`
+
+Rejected alternatives:
+- Binary correct/incorrect (too coarse)
+- Raw price change as score (unbounded, hard to compare across assets)
+- Sharpe/Sortino ratios (deferred to Phase 12)
+
+---
+
+# Decision 034
+
+## Use inline JSON snapshots, not separate files
+
+Date: 2026-08-13
+
+Decision:
+Store the full Evidence Register snapshot as inline TEXT (JSON string) in the `research_sessions` row, not as external files or a separate table.
+
+Reason:
+- Single-row retrieval: get session + snapshot in one query
+- No file path management or cleanup needed
+- SQLite TEXT handles multi-MB JSON fine for MVP scale
+- `NumpyEncoder` handles `np.float64`, `np.int64` serialization safely
+
+Rejected alternatives:
+- Separate `evidence_snapshots` table (more joins, more complexity)
+- External JSON files (path management, git noise, cleanup risk)
+- Pickle blobs (Python-only, not human-readable)
+
+Revisit if: Snapshots exceed 10MB or need partial querying inside JSON
+
+---
+
+# Decision 035
+
+## Fresh start for audit trail — no migration from loop_states
+
+Date: 2026-08-13
+
+Decision:
+`research_sessions` starts empty. Old `loop_states` remains untouched. No backfill of historical loop executions.
+
+Reason:
+- `loop_states` schema lacks the fields needed for audit (sector, bull/bear strength, evidence snapshot)
+- Backfill would require reconstructing evidence registers from partial data — unreliable
+- Clean separation: `loop_states` = execution audit log, `research_sessions` = research quality audit
+
+Rejected alternatives:
+- Migrate old loop_states (complex, incomplete data)
+- Dual-write to both tables (unnecessary coupling)
+
+---
+
+# Decision 036
+
+## Strict sector validation — unknown sectors are errors
+
+Date: 2026-08-13
+
+Decision:
+`--sector` CLI flag and watchlist JSON both enforce strict canonical sector validation. Unknown sectors exit with code 1, not silently become NULL.
+
+Reason:
+- Silent NULLs create dirty data that pollutes audit grouping
+- Strict validation forces consistency at entry time
+- Fuzzy matching + aliases handle common typos (`ai` → `generative-ai`)
+- Watchlist loader validates ALL sectors at startup (fail fast)
+
+Rejected alternatives:
+- Silent NULL on unknown sector (creates unclean audit data)
+- Auto-detection via LLM (expensive, non-deterministic, overkill for MVP)

@@ -186,7 +186,58 @@ python main.py --entity AAPL --quant-only --period 6mo
 
 Available periods: `1mo`, `3mo` (default), `6mo`, `1y`
 
+
 ---
+
+## Batch & Watchlist Analysis
+
+Analyze multiple entities from a predefined watchlist:
+
+```bash
+# Analyze a single category
+python main.py --watchlist tech_blue_chip --hypotheses
+```
+# Analyze all categories
+```bash 
+python main.py --watchlist all --hypotheses
+```
+# With PDF export
+```bash
+python main.py --watchlist tech_blue_chip --hypotheses --pdf
+```
+Available categories: tech_blue_chip, tech_growth, crypto, startups, all
+
+Watchlist configuration lives in config/watchlist.json.
+
+## Sector Tagging
+
+Tag a session with a canonical sector for audit trail grouping:
+```bash
+python main.py --entity NVIDIA --ticker NVDA --sector semiconductors --hypotheses
+```
+List valid sectors:
+```bash
+python main.py --list-sectors
+```
+Sectors are validated strictly — unknown sectors produce an error, not silent NULL
+
+## Audit Trail
+Evaluate historical research accuracy after sessions have aged 30 days:
+```bash
+# Self-healing: record missing outcomes, then display stats
+python main.py --audit
+
+# Force re-evaluation of all historical sessions
+python main.py --audit --audit-force
+
+# List all saved sessions
+python main.py --list-sessions
+
+```
+Audit trail requires:
+- research_sessions table (auto-created on first run)
+- research_outcomes table (auto-created on first run)
+- Entities with tickers (startups are saved but not scored)
 
 ## Environment Variables
 
@@ -316,6 +367,30 @@ If Technical Agent returns 403 errors:
 ```env
 GITHUB_TOKEN=ghp_your_token_here
 ```
+
+### Audit Shows Zero Scored Sessions
+
+If `--audit` shows `Scored sessions: 0`, this is expected if:
+- No sessions are older than 30 days yet (time-gated by design)
+- You haven't run any analyses with tickers (startups are skipped)
+
+Run some watchlist analyses now, then re-run `--audit` after 30 days.
+
+### Watchlist Category Not Found
+
+If you see:
+```text
+Error: Unknown watchlist: 'tech'. Available: ['tech_blue_chip', 'tech_growth', 'crypto', 'startups']
+
+```
+Use the exact category name from config/watchlist.json.
+
+### Unknown Sector Error
+If you see:
+```Text
+Error: Unknown sector 'ai'. Run 'python main.py --list-sectors' to see valid options.
+```
+Use the canonical name or a recognized alias. Example: semiconductors, generative-ai, l1-blockchain.
 
 ---
 

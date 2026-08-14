@@ -455,6 +455,70 @@ Produces professional investment research memos from loop results.
 
 ---
 
+# Layer 9 — Audit Trail
+
+## Location
+
+```text
+data/audit.py
+```
+Persists every research session and compares historical hypotheses against actual market outcomes.
+
+## Responsibilities
+- Save completed research sessions with full evidence snapshots
+- Record 30-day price outcomes for scored entities
+- Compute graded accuracy scores (-1.0 to +1.0)
+- Aggregate statistics by asset type, uncertainty level, evidence strength, sector
+
+## Data Flow
+
+```text 
+EvidenceDrivenLoop.run()
+        │
+        ▼
+save_session(results, report_path, sector)
+        │
+        ▼
+research_sessions (SQLite)
+        │
+        [30 days pass]
+        │
+        ▼
+record_outcome(session_id, ticker)
+        │
+        ▼
+fetch_stock_data(start=session_date, end=session_date+5d)
+fetch_stock_data(start=session_date+30d, end=session_date+35d)
+        │
+        ▼
+score_outcome(bias, price_change_30d)
+        │
+        ▼
+research_outcomes (SQLite)
+        │
+        ▼
+get_accuracy_stats() → --audit display
+
+```
+## Scoring
+
+Graded, not binary:
+
+- Bullish +5% move → +1.00
+- Bearish -3% move → +0.60
+- Neutral ±1% move → +1.00
+- Neutral ±5% move → +0.40
+- Formula: score = price_change / 5.0 (capped at ±1.0). Neutral uses asymmetric penalty.
+
+## Sector System
+```text 
+config/sectors.py
+```
+- Canonical sectors in kebab-case
+- Fuzzy matching + aliases
+- Strict validation: unknown sectors = ERROR
+- Explicit assignment only (watchlist JSON or --sector CLI)
+
 # Design
 
 - Jinja2 templating for clean separation of logic and presentation
@@ -553,12 +617,27 @@ Includes:
 ---
 # Integration
 
+# Integration
+
 The Report Generator is invoked automatically at the end of the `--hypotheses` workflow via:
 
 ```text
-controller/loop.py → _final_output()
+controller/loop.py → _final_output() → generate_report()
 ```
+The Audit Trail is invoked at the end of loop.run() via:
 
+```text
+controller/loop.py → save_session(results, report_path, sector)
+```
+Batch analysis is orchestrated from main.py:
+
+```text
+main.py --watchlist <category> → load_watchlist() → loop.run() per entity
+```
+Audit display is triggered via:
+```text
+main.py --audit → run_audit() → get_accuracy_stats()
+```
 ---
 
 # CLI

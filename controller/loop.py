@@ -14,6 +14,7 @@ from data.db import DB_PATH
 from core.evidence import EvidenceRegister
 from agents.critic import CriticAgent
 from reports.generator import generate_report
+from data.audit import save_session
 
 logger = logging.getLogger(__name__)
 
@@ -141,7 +142,8 @@ class EvidenceDrivenLoop:
             f"stability={dash.get('stability', {}).get('level', '?')}"
         )
 
-    def run(self, entity: str, ticker: str = None, repo: str = None, config: dict = None) -> dict:
+    def run(self, entity: str, ticker: str = None, repo: str = None, 
+            config: dict = None, sector: str = None) -> dict:
         """
         Main entry point. Executes the full evidence-driven pipeline.
         """
@@ -165,8 +167,20 @@ class EvidenceDrivenLoop:
 
             # Phase 3: Final output generation
             results = self._final_output(entity, ticker, config)
+            
+            # Phase 9: Persist session to audit trail
+            try:
+                report_path = None
+                if results.get('report'):
+                    report_path = results['report'].get('markdown_path')
+                session_id = save_session(results, report_path, sector=sector)
+                results['session_id'] = session_id
+            except Exception as e:
+                logger.warning(f"Failed to save session to audit trail: {e}")
 
             self._persist(entity, 'completed')
+
+            
 
             print(f"\n{c('OK Loop Complete', BOLD, GREEN)}  |  {self.iteration} iteration(s)  |  {len(self.register)} evidence items  |  {c(self.halt_reason, DIM)}")
 

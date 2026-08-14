@@ -154,9 +154,24 @@ The Jinja2 template (`report.md.j2`) produces a fixed 7-section structure. It do
 | On-chain analysis | ❌ Not implemented | No blockchain node or Dune Analytics integration |
 | Fundamental valuation | ❌ Not implemented | No DCF, comparables, or earnings modeling |
 
+
 ---
 
-## 10. Hardware & Environment Limitations
+## 10. Audit Trail Limitations
+
+### Time-Gated Scoring
+The 30-day outcome scoring means accuracy statistics are empty until sessions age. Running `--audit` immediately after creating sessions will show zero scored sessions. This is expected behavior, not a bug.
+
+### Startups Without Tickers
+Entities in the `startups` watchlist category (e.g., Anthropic, OpenAI) have no ticker. They are analyzed and saved to `research_sessions`, but `record_outcome()` skips them. No price-based accuracy score is computed.
+
+### Graded Scoring, Not Binary
+Accuracy scores range from -1.0 to +1.0. A bearish bias with -3% price change scores +0.60 (partially correct), not 0.0. This is intentional — the system measures directional magnitude, not just win/loss.
+
+### Evidence Strength Buckets
+Current grouping uses `bull_strength + bear_strength` only. A future upgrade (Phase 9.5) will add composite strength using conviction + diversity + depth when data justifies it.
+
+## 11. Hardware & Environment Limitations
 
 ### Consumer Hardware Target
 AIRS is optimized for:
@@ -177,13 +192,12 @@ AIRS is local-first. There is currently no:
 
 ## Known Issues (Active)
 
-| Issue | Impact | Planned Resolution |
-|-------|--------|-------------------|
-| Report footer shows `v0.3.6` instead of `v0.3.7` | Cosmetic | Patch in `reports/templates/report.md.j2` |
-| `research_sessions` and `research_outcomes` tables not yet created | Cannot persist session history | Phase 9 — Audit Trail |
-| `--audit` CLI flag not yet implemented | Cannot query historical accuracy | Phase 9 — Audit Trail |
-| Risk Agent legacy bridge | Minor architectural debt | Phase 9 — Direct Evidence Register integration |
-
+| Issue | Impact | Status |
+|-------|--------|--------|
+| Report footer shows `v0.3.6` instead of `v0.3.7` | Cosmetic | Fixed in template — verify `reports/templates/report.md.j2` |
+| Risk Agent legacy bridge | Minor architectural debt | Unchanged — direct Evidence Register integration still planned |
+| 30-day outcome scoring requires time to pass | Audit stats populate slowly | Time-gated by design; run `--audit` after 2026-09-12 |
+| Startups (no ticker) cannot be scored | Audit coverage gap | By design — requires Phase 11 proxy metrics |
 ---
 
 ## How to Interpret These Limitations

@@ -1,6 +1,10 @@
 import argparse
+import json
+from pathlib import Path
 import pandas as pd
 
+from config.sectors import normalize_sector, list_sectors
+from data.audit import get_accuracy_stats, record_outcome
 from utils.formatting import (
     header, box, mini_box, progress_bar, status,
     dashboard_panel, bias_panel, uncertainty_panel,
@@ -185,6 +189,105 @@ def run_risk_analysis(entity: str, agent_outputs: dict):
     return result
 
 
+def load_watchlist(category: str):
+    """Load entities from config/watchlist.json."""
+    watchlist_path = Path(__file__).parent / "config" / "watchlist.json"
+    with open(watchlist_path, 'r', encoding='utf-8') as f:
+        data = json.load(f)
+    
+    from config.sectors import validate_watchlist_sectors
+    validate_watchlist_sectors(data)
+    
+    if category == "all":
+        all_entities = []
+        for cat, entities in data["watchlists"].items():
+            all_entities.extend(entities)
+        return all_entities
+    
+    if category not in data["watchlists"]:
+        available = list(data["watchlists"].keys())
+        raise ValueError(f"Unknown watchlist: '{category}'. Available: {available}")
+    
+    return data["watchlists"][category]
+
+
+def run_audit(force=False):
+    """Run the audit trail: evaluate historical sessions and display stats."""
+    from datetime import datetime, timedelta, timezone
+    from data.db import get_connection
+    
+    conn = get_connection()
+    cursor = conn.cursor()
+    
+    thirty_days_ago = (datetime.now(timezone.utc) - timedelta(days=30)).strftime("%Y-%m-%d")
+    
+    if force:
+        cursor.execute("DELETE FROM research_outcomes")
+        conn.commit()
+        print("Cleared all existing outcomes for forced re-evaluation.")
+        cursor.execute("SELECT id, ticker FROM research_sessions WHERE ticker IS NOT NULL")
+    else:
+        cursor.execute("""
+            SELECT id, ticker FROM research_sessions 
+            WHERE ticker IS NOT NULL 
+            AND session_date <= ?
+            AND id NOT IN (SELECT session_id FROM research_outcomes)
+        """, (thirty_days_ago,))
+    
+    pending = cursor.fetchall()
+    conn.close()
+    
+    print(f"\n{'='*60}")
+    print("AIRS AUDIT TRAIL")
+    print(f"{'='*60}")
+    
+    if not pending:
+        print("No pending sessions to evaluate.")
+    else:
+        print(f"Evaluating {len(pending)} session(s)...")
+        for row in pending:
+            result = record_outcome(row["id"], row["ticker"])
+            status = result.get("status", "unknown")
+            if status == "recorded":
+                print(f"  Session {row['id']}: {result['actual_direction']} {result['price_change_30d']:+.2f}% (score: {result['accuracy_score']:+.2f})")
+            elif status == "pending":
+                print(f"  Session {row['id']}: pending (not old enough)")
+            else:
+                print(f"  Session {row['id']}: {status} - {result.get('reason', 'unknown')}")
+    
+    # Display stats
+    stats = get_accuracy_stats()
+    print(f"\n{'='*60}")
+    print("ACCURACY STATISTICS")
+    print(f"{'='*60}")
+    print(f"Total sessions:      {stats['total_sessions']}")
+    print(f"Scored sessions:     {stats['scored_sessions']}")
+    print(f"Pending evaluation:  {stats['pending_sessions']}")
+    print(f"Overall avg score:   {stats['overall_avg_score']:+.4f}")
+    
+    if stats['by_asset_type']:
+        print(f"\nBy Asset Type:")
+        for asset_type, data in sorted(stats['by_asset_type'].items()):
+            print(f"  {asset_type:20s} | {data['count']:3d} sessions | avg: {data['avg_score']:+.4f}")
+    
+    if stats['by_uncertainty']:
+        print(f"\nBy Uncertainty Level:")
+        for level, data in sorted(stats['by_uncertainty'].items()):
+            print(f"  {level:20s} | {data['count']:3d} sessions | avg: {data['avg_score']:+.4f}")
+    
+    if stats['by_evidence_strength']:
+        print(f"\nBy Evidence Strength:")
+        for strength, data in sorted(stats['by_evidence_strength'].items()):
+            if data['count'] > 0:
+                print(f"  {strength:20s} | {data['count']:3d} sessions | avg: {data['avg_score']:+.4f}")
+    
+    if stats['by_sector']:
+        print(f"\nBy Sector:")
+        for sector, data in sorted(stats['by_sector'].items()):
+            print(f"  {sector:20s} | {data['count']:3d} sessions | avg: {data['avg_score']:+.4f}")
+    
+    print(f"{'='*60}")
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # MAIN ENTRY POINT
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -203,17 +306,67 @@ def main():
     parser.add_argument("--risk-only", action="store_true", help="Run only Risk Agent (legacy, not recommended)")
     parser.add_argument("--critic", action="store_true", help="Run Critic evaluation (legacy mode)")
     parser.add_argument("--pdf", action="store_true", help="Also generate PDF report (requires weasyprint)")
+    parser.add_argument("--watchlist", type=str, help="Batch analyze watchlist category (e.g., 'tech_blue_chip', 'all')")
+    parser.add_argument("--sector", type=str, help="Sector tag for audit trail (e.g., 'semiconductors')")
+    parser.add_argument("--list-sectors", action="store_true", help="List valid sectors and exit")
+    parser.add_argument("--list-sessions", action="store_true", help="List all research sessions and exit")
+    parser.add_argument("--audit", action="store_true", help="Run audit trail: evaluate historical sessions")
+    parser.add_argument("--audit-force", action="store_true", help="Force re-evaluation of all historical sessions")
     args = parser.parse_args()
 
-    # Validate inputs
-    if not args.technical_only and not args.entity:
-        parser.error("--entity is required unless using --technical-only")
+       # Validate inputs
+    if not args.technical_only and not args.entity and not args.watchlist and not args.audit and not args.list_sectors and not args.list_sessions:
+        parser.error("--entity is required unless using --technical-only, --watchlist, --audit, or --list-sectors")
 
-    if args.technical_only and not args.repo:
+    if args.technical_only and not args.repo and not args.watchlist:
         parser.error("--repo is required when using --technical-only")
 
     if args.risk_only:
         parser.error("--risk-only is not supported. Use --hypotheses for full analysis.")
+
+    # --list-sectors: early exit
+        
+    if args.list_sessions:
+        from data.db import get_connection
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT id, entity, ticker, sector, session_date, directional_bias,
+                   uncertainty_level, iterations, evidence_count, halt_reason
+            FROM research_sessions
+            ORDER BY id DESC
+        """)
+        rows = cursor.fetchall()
+        conn.close()
+
+        print(f"\n{'='*90}")
+        print("RESEARCH SESSIONS")
+        print(f"{'='*90}")
+        if not rows:
+            print("No sessions found.")
+        else:
+            print(f"{'ID':<4} {'Entity':<14} {'Ticker':<10} {'Sector':<18} {'Date':<12} {'Bias':<8} {'Uncert':<10} {'Iters':<5} {'Evidence':<8}")
+            print("-" * 90)
+            for r in rows:
+                ticker = r['ticker'] or '-'
+                sector = r['sector'] or '-'
+                print(f"{r['id']:<4} {r['entity']:<14} {ticker:<10} {sector:<18} {r['session_date']:<12} {r['directional_bias']:<8} {r['uncertainty_level']:<10} {r['iterations']:<5} {r['evidence_count']:<8}")
+        print(f"{'='*90}")
+        print(f"Total: {len(rows)} session(s)")
+        return 0
+
+    # Validate sector if provided
+    if args.sector:
+        canonical = normalize_sector(args.sector)
+        if canonical is None:
+            print(f"Error: Unknown sector '{args.sector}'.")
+            print("Run 'python main.py --list-sectors' to see valid options.")
+            return 1
+        args.sector = canonical  # Replace with canonical form
+
+    # Watchlist mode implies hypotheses
+    if args.watchlist:
+        args.hypotheses = True
 
     # Initialize database
     init_db()
@@ -237,12 +390,95 @@ def main():
         return 0
 
     # ═══════════════════════════════════════════════════════════════════════════
-    # EVIDENCE-DRIVEN LOOP MODE (Issue #9b+ — default when --hypotheses)
+    # AUDIT MODE
+    # ═══════════════════════════════════════════════════════════════════════════
+
+    if args.audit:
+        run_audit(force=args.audit_force)
+        return 0
+
+    # ═══════════════════════════════════════════════════════════════════════════
+    # BATCH / WATCHLIST MODE
+    # ═══════════════════════════════════════════════════════════════════════════
+
+    if args.watchlist:
+        print(header("AIRS", "v0.3.7", f"Batch Analysis: {args.watchlist}"))
+        
+        try:
+            entities = load_watchlist(args.watchlist)
+        except ValueError as e:
+            print(f"Error: {e}")
+            return 1
+        
+        print(f"Loaded {len(entities)} entities from watchlist '{args.watchlist}'\n")
+        
+        batch_results = []
+        
+        for item in entities:
+            entity = item["entity"]
+            ticker = item.get("ticker")
+            repo = item.get("repo")
+            sector = item.get("sector")
+            
+            print(f"\n{'='*60}")
+            print(f"ANALYZING: {entity}")
+            print(f"{'='*60}")
+            
+            quant_agent = QuantAgent()
+            critic_agent = CriticAgent()
+            risk_agent = RiskAgent()
+            
+            loop = EvidenceDrivenLoop(
+                business_runner=lambda e=entity, t=ticker: run_business_analysis(e, ticker=t),
+                technical_runner=(lambda r=repo: run_technical_analysis(r)) if repo else None,
+                quant_agent=quant_agent,
+                critic_agent=critic_agent,
+                risk_agent=risk_agent,
+                hypotheses_runner=generate_from_register,
+            )
+            
+            results = loop.run(
+                entity=entity,
+                ticker=ticker or entity,
+                repo=repo,
+                config={
+                    'hypotheses': True,
+                    'show_sources': args.show_sources,
+                    'pdf': args.pdf,
+                },
+                sector=sector,
+            )
+            
+            batch_results.append({
+                "entity": entity,
+                "ticker": ticker,
+                "sector": sector,
+                "bias": results.get("hypotheses", {}).get("directional_bias", {}).get("net", "unknown"),
+                "uncertainty": results.get("hypotheses", {}).get("uncertainty", {}).get("level", "Unknown"),
+                "iterations": results.get("iterations", 0),
+                "evidence_count": results.get("evidence_count", 0),
+                "session_id": results.get("session_id"),
+            })
+        
+        # Batch summary
+        print(f"\n{'='*60}")
+        print("BATCH SUMMARY")
+        print(f"{'='*60}")
+        print(f"{'Entity':<20} {'Ticker':<10} {'Bias':<10} {'Uncertainty':<12} {'Iters':<6} {'Evidence':<8}")
+        print("-" * 60)
+        for r in batch_results:
+            ticker_str = r["ticker"] or "-"
+            print(f"{r['entity']:<20} {ticker_str:<10} {r['bias']:<10} {r['uncertainty']:<12} {r['iterations']:<6} {r['evidence_count']:<8}")
+        print(f"{'='*60}")
+        
+        return 0
+
+    # ═══════════════════════════════════════════════════════════════════════════
+    # EVIDENCE-DRIVEN LOOP MODE (single entity)
     # ═══════════════════════════════════════════════════════════════════════════
 
     if args.hypotheses:
         print(header("AIRS", "v0.3.7", "Evidence-Driven Investment Research"))
-        
 
         # Create agent instances
         quant_agent = QuantAgent()
@@ -268,8 +504,11 @@ def main():
                 'hypotheses': True,
                 'show_sources': args.show_sources,
                 'pdf': args.pdf,
-            }
+            },
+            sector=args.sector,
         )
+        
+        
 
         # ═══════════════════════════════════════════════════════════════════════
         # FINAL RESULTS SUMMARY — DASHBOARD STYLE

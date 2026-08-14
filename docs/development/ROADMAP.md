@@ -252,22 +252,38 @@ Working system &gt; beautiful interface &gt; advanced features
 ## Goal: System learns from its own predictions
 
 ### Definition of Done:
-- [ ] `research_sessions` table: entity, asset_type, date, dashboard, halt_reason
-- [ ] `research_outcomes` table: session_id, actual_direction, price_change_30d, accuracy_score
-- [ ] Save full Evidence Register snapshot per session (JSON blob)
-- [ ] Save hypotheses (directional_bias + uncertainty) per session
-- [ ] CLI command to query historical accuracy: `python main.py --audit`
-- [ ] Query examples:
-  - "Show analyses where directional_bias was BULLISH with uncertainty &lt; 30%"
-  - "Accuracy on crypto vs public_stock"
-  - "How often did unresolved contradictions predict reversals?"
+- [x] `research_sessions` table: entity, asset_type, date, dashboard, halt_reason, sector, evidence_snapshot
+- [x] `research_outcomes` table: session_id, actual_direction, price_change_30d, accuracy_score
+- [x] Save full Evidence Register snapshot per session (JSON blob with numpy-safe serialization)
+- [x] Save hypotheses (directional_bias + uncertainty) per session
+- [x] CLI command to query historical accuracy: `python main.py --audit`
+- [x] Batch watchlist runner: `python main.py --watchlist all --hypotheses`
+- [x] Sector tagging with strict validation
+- [ ] 30-day outcome scoring (time-gated — requires sessions to age)
 
-### Status: 🚧 Active (Issue #12)
+### Status: ✅ Infrastructure Complete (Issue #12)
+### Branch: `feature/#12-audit-trail`
 ### Estimated: 2-3 days
 ### Blocked by: Phase 8
-### Blocks: Nothing
+### Blocks: Phase 9.5
 
 ---
+
+# Phase 9.5: Audit Trail Polish
+
+## Goal: Richer analysis once sufficient historical data exists
+
+### Definition of Done:
+- [ ] `--audit --export-csv` for external analysis
+- [ ] Trend graphs (accuracy over time) once 20+ scored sessions
+- [ ] Per-sector accuracy grouping with statistical significance
+- [ ] Composite evidence strength (conviction + diversity + depth)
+- [ ] Historical session backfill (35 sessions for immediate stats)
+
+### Status: 📅 Planned (pending 30-day aging)
+### Estimated: 1-2 days
+### Blocked by: Phase 9
+### Blocks: Nothing
 
 # Phase 10: Interface and Presentation
 
@@ -288,6 +304,8 @@ Working system &gt; beautiful interface &gt; advanced features
 
 ---
 
+
+
 # Minimum Viable Version
 
 If time becomes limited:
@@ -300,10 +318,11 @@ Must have:
 - [x] Evidence Register
 - [x] Hypothesis Engine (Directional Bias + Uncertainty)
 - [x] Report Generator
+- [x] Audit Trail Infrastructure (session persistence, outcome recording, stats)
 
 Optional:
+- [ ] 30-Day Outcome Scoring (time-gated, will populate automatically)
 - [ ] Streamlit UI
-- [ ] Audit Trail
 - [ ] Entity Disambiguation
 
 ---

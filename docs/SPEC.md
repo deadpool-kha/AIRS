@@ -408,6 +408,33 @@ The Critic Agent must produce a four-dimensional dashboard:
 | Agreement | Whether active dimensions agree on directional signal |
 | Stability | Whether deeper data changed the thesis across iterations |
 
+## FR-009: Audit Trail & Backtesting
+
+The system must:
+
+- Persist every completed research session to `research_sessions` with:
+  - Entity, ticker, asset type, sector, session date
+  - Directional bias, uncertainty score/level
+  - Bull/bear strength, evidence count, halt reason, iterations
+  - Full Evidence Register snapshot (JSON, numpy-safe)
+- Record 30-day market outcomes in `research_outcomes` with:
+  - Actual price direction, percentage change
+  - Graded accuracy score (-1.0 to +1.0)
+- Provide `--audit` CLI command for self-healing evaluation
+- Provide `--audit --force` for full re-evaluation
+- Only score entities with tickers; startups skip price-based outcomes
+
+## FR-010: Batch Analysis & Watchlist
+
+The system must:
+
+- Load entity definitions from `config/watchlist.json`
+- Support categories: `tech_blue_chip`, `tech_growth`, `crypto`, `startups`, `all`
+- Run the full evidence-driven loop for each entity sequentially
+- Display batch summary table with entity, bias, uncertainty, iterations
+- Support `--sector` CLI flag with strict canonical validation
+- Support `--list-sectors` to display valid options
+
 # 10. Non-Functional Requirements
 
 ## Cost
@@ -637,6 +664,7 @@ All agents return a standardized dictionary.
 
 ## Loop State Format
 
+
 ```python
 {
 
@@ -656,6 +684,43 @@ All agents return a standardized dictionary.
 
 "status": "iterating" *# "iterating", "complete", "failed"*
 
+}
+```
+## Research Session Format
+
+```python
+{
+    "id": 42,
+    "entity": "AAPL",
+    "ticker": "AAPL",
+    "asset_type": "public_stock_with_repo",
+    "sector": "consumer-tech",
+    "session_date": "2026-08-13",
+    "directional_bias": "bearish",
+    "uncertainty_score": 0.17,
+    "uncertainty_level": "Low",
+    "bull_strength": 1.21,
+    "bear_strength": 2.91,
+    "evidence_count": 19,
+    "halt_reason": "max_iterations",
+    "iterations": 3,
+    "report_path": "reports/output/AAPL_20260813_043449.md",
+    "evidence_snapshot": "{...}",  # JSON string
+    "created_at": "2026-08-13T04:34:49Z"
+}
+```
+## Research Outcome Format
+``` python 
+{
+    "id": 7,
+    "session_id": 42,
+    "check_date": "2026-09-12T10:00:00Z",
+    "actual_direction": "down",
+    "price_change_30d": -4.35,
+    "bias_was_correct": True,
+    "accuracy_score": 0.87,
+    "notes": "Baseline: 223.45, End: 213.73",
+    "created_at": "2026-09-12T10:00:00Z"
 }
 ```
 
@@ -691,6 +756,8 @@ The system includes:
 
 - [x] Jinja2 report generation (Markdown + optional PDF)
 
+- [x] Audit Trail infrastructure: session persistence, 30-day outcome recording, accuracy statistics
+
 ## Portfolio Quality
 
 A developer can clearly explain:
@@ -707,31 +774,31 @@ A developer can clearly explain:
 
 - Engineering tradeoffs (local LLMs vs. speed, heuristic thresholds vs. calibration)
 
+- The graded scoring formula and why neutral is not a free pass
+
+- The sector canonicalization system and evidence strength buckets
+
 # 14. Future Features
 
-The following are **not** part of the v0.3.7 MVP:
+The following are **not** part of the v0.3.8 MVP:
 
-- Audit Trail & Backtesting (Phase 9 — Active)
+## Phase 9.5 — Audit Trail Polish
+- `--audit --export-csv`
+- Trend graphs (accuracy over time)
+- Per-sector accuracy grouping (once 20+ sessions per sector)
+- Composite evidence strength (conviction + diversity + depth)
 
-- Streamlit web interface (Phase 10 — Planned)
+## Phase 10 — Streamlit Web Interface
+- Web dashboard for research memos
+- Historical accuracy charts
+- Interactive watchlist management
 
-- Real-time monitoring
+## Phase 11 — Startup Outcome Proxy
+- Track funding rounds, GitHub star growth, hiring velocity
+- Define success metrics for non-public assets
 
-- Portfolio tracking
-
-- Alerts
-
-- Automated investment recommendations
-
-- Cloud deployment
-
-- Multi-user support
-
-- Advanced machine learning prediction models
-
-- On-chain data integration
-
-- ESG Agent, Macro Agent
+## Deferred Indefinitely
+- Docker, Cloud deployment, ESG Agent, Macro Agent, On-chain Agent, Sharpe/Sortino/VaR
 
 # 15. Product Principles
 

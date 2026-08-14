@@ -351,7 +351,13 @@ Reproducibility takes priority over creativity.
 Given the same inputs, AIRS should produce the same analytical results.
 
 ---
+## Rule 6
 
+The system must measure its own research quality over time.
+
+Auditability is not a feature — it is a requirement for trusting any evidence-driven system.
+
+---
 # What AIRS Is
 
 AIRS is:
@@ -431,9 +437,26 @@ The AIRS architecture is designed to become a general-purpose **evidence-driven 
 - Market research
 - Strategic business analysis
 
-Across all of these domains, the underlying challenge remains the same:
+### Measuring What We Claim
+
+The philosophy extends beyond individual research sessions.
+
+If AIRS claims that "Low uncertainty + High agreement = reliable research," that claim itself must be tested. The Audit Trail (Phase 9) exists to close this loop:
+
+```text
+Research Session → Evidence Quality → Directional Bias → 30 Days → Actual Outcome → Score
+```
+Over time, this produces an evidence-based feedback loop:
+- Does the Critic's Agreement score predict directional accuracy?
+- Do assets with "Elevated" uncertainty actually produce noisier outcomes?
+- Which sectors does the system understand well? Which does it misunderstand?
+
+This is not about predicting prices. It is about validating whether the research process itself produces useful structure.
+
+ Across all of these domains, the underlying challenge remains the same:
 
 > Transform large volumes of information into transparent, structured, and trustworthy decisions.
+
 
 ---
 

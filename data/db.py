@@ -34,6 +34,9 @@ def get_connection():
     """
     conn = sqlite3.connect(DB_PATH)
     
+    # Enforce foreign key constraints. SQLite disables them by default.
+    conn.execute("PRAGMA foreign_keys = ON")
+    
     # This lets us access columns by name instead of index.
     # Without it: row[0] = id, row[1] = ticker (hard to read, easy to break)
     # With it: row["id"], row["ticker"] (self-documenting)
@@ -128,7 +131,7 @@ def init_db():
             should_iterate_history TEXT
         )
     """)
-    # --- reports table ---
+        # --- reports table ---
     # Final output: the investment memo.
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS reports (
@@ -140,6 +143,66 @@ def init_db():
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (entity_id) REFERENCES entities(id)
         )
+    """)
+    
+    # --- research_sessions table ---
+    # Phase 9: Audit trail for research sessions.
+    # Stores the output of each EvidenceDrivenLoop run for later outcome comparison.
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS research_sessions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            entity TEXT NOT NULL,
+            ticker TEXT,
+            asset_type TEXT NOT NULL,
+            sector TEXT,
+            session_date TEXT NOT NULL,
+            directional_bias TEXT NOT NULL,
+            uncertainty_score REAL NOT NULL,
+            uncertainty_level TEXT NOT NULL,
+            bull_strength REAL NOT NULL,
+            bear_strength REAL NOT NULL,
+            evidence_count INTEGER NOT NULL,
+            halt_reason TEXT,
+            iterations INTEGER NOT NULL,
+            report_path TEXT,
+            evidence_snapshot TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+    
+    cursor.execute("""
+        CREATE INDEX IF NOT EXISTS idx_sessions_entity ON research_sessions(entity)
+    """)
+    cursor.execute("""
+        CREATE INDEX IF NOT EXISTS idx_sessions_date ON research_sessions(session_date)
+    """)
+    cursor.execute("""
+        CREATE INDEX IF NOT EXISTS idx_sessions_asset_type ON research_sessions(asset_type)
+    """)
+    cursor.execute("""
+        CREATE INDEX IF NOT EXISTS idx_sessions_sector ON research_sessions(sector)
+    """)
+    
+    # --- research_outcomes table ---
+    # Phase 9: Actual market outcomes compared against historical research sessions.
+    # Linked to research_sessions via foreign key.
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS research_outcomes (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            session_id INTEGER NOT NULL,
+            check_date TEXT NOT NULL,
+            actual_direction TEXT,
+            price_change_30d REAL,
+            bias_was_correct BOOLEAN,
+            accuracy_score REAL,
+            notes TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (session_id) REFERENCES research_sessions(id)
+        )
+    """)
+    
+    cursor.execute("""
+        CREATE INDEX IF NOT EXISTS idx_outcomes_session ON research_outcomes(session_id)
     """)
     
     conn.commit()
