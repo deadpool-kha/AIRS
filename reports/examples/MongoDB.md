@@ -1,10 +1,10 @@
-# Investment Research Memo: rust-lang
+# Investment Research Memo: MongoDB
 
-**Asset Type:** `open_source_or_pre_launch`  
-**Ticker:** rust-lang  
-**Generated:** 2026-08-05 04:38 UTC  
-**Research Iterations:** 1  
-**Halt Reason:** A coherent directional view was formed with available evidence
+**Asset Type:** `public_stock_with_repo`  
+**Ticker:** MDB  
+**Generated:** 2026-08-14 06:45 UTC  
+**Research Iterations:** 3  
+**Halt Reason:** Circuit breaker: maximum iterations reached
 
 ---
 
@@ -12,10 +12,10 @@
 
 **Directional Bias: BULLISH** — The evidence supports a positive investment thesis.
 
-**Uncertainty Level:** 35% — **Moderate**  
-*Scarcity=0.15, Conflict=0.12, Coverage=0.08*
+**Uncertainty Level:** 30% — **Moderate**  
+*Scarcity=0.00, Conflict=0.30, Coverage=0.00*
 
-The research loop halted after **1 iteration** because: *A coherent directional view was formed with available evidence*.
+The research loop halted after **3 iterations** because: *Circuit breaker: maximum iterations reached*.
 
 
 ---
@@ -24,10 +24,10 @@ The research loop halted after **1 iteration** because: *A coherent directional 
 
 | Dimension | Score | Details |
 |-----------|-------|---------|
-| Data Quality | 92% | business, technical |
-| Coverage | 100% | 2/2 features present |
-| Agreement | High | 2 positive, 0 negative, 0 neutral across 2 dimensions |
-| Stability | Unknown | First iteration — no baseline |
+| Data Quality | 82% | quant, business, technical |
+| Coverage | 89% | 16/18 features present |
+| Agreement | Low | 2 positive, 1 negative, 1 neutral across 4 dimensions |
+| Stability | Stable | No dimension flipped direction |
 
 ---
 
@@ -35,36 +35,44 @@ The research loop halted after **1 iteration** because: *A coherent directional 
 
 ### 3.1 Directional Bias
 
-- **Bullish Strength:** 1.13 (3 claims)
-- **Bearish Strength:** 0.33 (1 claims)
-- **Net Score:** +0.80
+- **Bullish Strength:** 3.73 (7 claims)
+- **Bearish Strength:** 2.83 (5 claims)
+- **Net Score:** +0.90
 - **Overall Direction:** BULLISH
 
 ### 3.2 Bull Case
 
-**Thesis:** rust-lang is undervalued with upside potential
+**Thesis:** MongoDB is undervalued with upside potential
 
 | Evidence | Source | Strength | Raw Value |
 |----------|--------|----------|-----------|
-| 3 positive business signal(s) | business | 0.35 | 3 |
+| Strong price momentum and uptrend | quant | 0.85 | strong_uptrend |
+| Strong monthly return: 43.73% | quant | 0.70 | 43.73 |
+| Strong 20-day momentum: 51.2% | quant | 0.65 | 0.5122 |
+| MACD bullish — positive momentum | quant | 0.50 | bullish |
+| 1 positive business signal(s) | business | 0.25 | 1 |
 | 1 catalyst(s) identified | business | 0.33 | 1 |
-| High development activity: 700.0/week | technical | 0.45 | 700.0 |
+| High development activity: 350.0/week | technical | 0.45 | 350.0 |
 
-**Total Strength:** 1.13
+**Total Strength:** 3.73
 
 ### 3.3 Bear Case
 
-**Thesis:** rust-lang is overvalued or faces significant risks
+**Thesis:** MongoDB is overvalued or faces significant risks
 
 | Evidence | Source | Strength | Raw Value |
 |----------|--------|----------|-----------|
+| RSI 94.2 — deeply overbought, pullback risk | quant | 0.60 | 94.22 |
+| High risk score: 0.87 | quant | 0.75 | 0.8668 |
+| Severe drawdown: 48.7% | quant | 0.70 | 0.4872 |
+| Elevated volatility regime | quant | 0.45 | elevated |
 | 1 business risks identified | business | 0.33 | 1 |
 
-**Total Strength:** 0.33
+**Total Strength:** 2.83
 
 ### 3.4 Base / Neutral Case
 
-**Thesis:** rust-lang is fairly valued with moderate growth
+**Thesis:** MongoDB is fairly valued with moderate growth
 
 | Evidence | Source | Strength | Raw Value |
 |----------|--------|----------|-----------|
@@ -75,15 +83,15 @@ The research loop halted after **1 iteration** because: *A coherent directional 
 
 ### 3.5 Uncertainty Analysis
 
-**Uncertainty Score:** 35% — **Moderate**
+**Uncertainty Score:** 30% — **Moderate**
 
 | Factor | Value | Interpretation |
 |--------|-------|----------------|
-| Scarcity | 0.15 | Few signals available |
-| Conflict | 0.12 | Dimensions disagree |
-| Coverage | 0.08 | Missing research dimensions |
+| Scarcity | 0.00 | Few signals available |
+| Conflict | 0.30 | Dimensions disagree |
+| Coverage | 0.00 | Missing research dimensions |
 
-*Scarcity=0.15, Conflict=0.12, Coverage=0.08*
+*Scarcity=0.00, Conflict=0.30, Coverage=0.00*
 
 ---
 
@@ -98,7 +106,7 @@ The research loop halted after **1 iteration** because: *A coherent directional 
 |--------|-------|
 | Business | 1 item: `business_context` |
 | Technical | 1 item: `technical_context` |
-| Quant | 0 items |
+| Quant | 15 items: `price_data`, `returns`, `volatility`, `momentum`, `moving_averages`, `drawdown`, `risk_score`, `trend`, `current_price`, `data_points`, `rsi`, `macd`, `volume_profile`, `atr`, `volatility_regime` |
 
 ### 4.2 Evidence by Tier
 
@@ -106,30 +114,41 @@ The research loop halted after **1 iteration** because: *A coherent directional 
 |------|-------|
 | Tier 1 | 0 items |
 | Tier 2 | 0 items |
-| Tier 3 | 0 items |
+| Tier 3 | 15 items: `price_data`, `returns`, `volatility`, `momentum`, `moving_averages`, `drawdown`, `risk_score`, `trend`, `current_price`, `data_points`, `rsi`, `macd`, `volume_profile`, `atr`, `volatility_regime` |
 
 ### 4.3 Quantitative Evidence
 
 | Metric | Value |
 |--------|-------|
+| Returns | daily_mean: 0.4418, daily_std: 4.7452, weekly: 18.4300, monthly: 43.7300 |
+| Volatility | 0.7533 |
+| Momentum | 5d: 0.1843, 10d: 0.3995, 20d: 0.5122, 30d: 0.3308 |
+| Moving Averages | sma_10: 398.6600, sma_20: 354.9800, sma_50: 347.4900 |
+| Drawdown | max_drawdown: 0.4872, peak_date: 2026-08-13, trough_date: 2026-04-10 |
+| Risk Score | 0.8668 |
+| Trend | strong_uptrend |
+| Current Price | 472.2900 |
+| Rsi | 94.2200 |
+| Macd | macd_line: 29.4829, signal_line: 15.4061, histogram: 14.0768, signal: bullish |
+| Volume Profile | avg_volume: 2032229.0000, volume_trend: decreasing, relative_volume: 1.0600 |
+| Atr | 21.6909 |
+| Volatility Regime | elevated |
 
 ### 4.4 Business Evidence
 
 
-**Summary:** Rust-lang has seen significant developments and partnerships, including the use of AI to aid migration from Python to Rust as highlighted by InfoWorld. Meta has emphasized Rust's role in enhancing sec...
+**Summary:** MongoDB Inc., the database company, saw its stock surge 7.9% following a positive analyst upgrade and reached a new 12-month high. The firm's parent company, MDB Capital Holdings, provided an update o...
 **Signals:**
 | Type | Category | Description |
 |------|----------|-------------|
-| POSITIVE | Partnership | Meta is using Rust to enhance security for WhatsApp, indicating strong industry support. |
-| NEUTRAL | Product | Rust adoption faces challenges due to shifts in memory-safe programming trends. |
-| POSITIVE | Funding|Competition | AI is being used to aid migration from Python to Rust, potentially increasing its competitiveness and accessibility. |
-| POSITIVE | Market | Rust nears top 10 in TIOBE Index, surpassing Python according to Techzine Global, suggesting growing market demand. |
+| POSITIVE | Funding | MongoDB Inc. saw its stock surge 7.9% following a positive analyst upgrade and reached a new 12-month high. |
+| NEUTRAL | Market | MDB Capital Holdings provided an update on its second quarter of 2026, focusing on asset monetization efforts and reporting a significant loss. |
 
 **Catalysts (1):**
-- Rust's continued development and potential integration with AI could drive adoption and usage.
+- Positive analyst upgrade and new $12.3M stock position opened by Illinois Municipal Retirement Fund
 
 **Risks (1):**
-- Shifts in memory-safe programming trends may stall Rust adoption.
+- Customer acquisition costs potentially undermining long-term platform ambitions
 
 
 ### 4.5 Technical Evidence
@@ -138,31 +157,34 @@ The research loop halted after **1 iteration** because: *A coherent directional 
 | Metric | Value |
 |--------|-------|
 | Health Score | 0.7 |
-| Commit Frequency | 700.0/week |
+| Commit Frequency | 350.0/week |
 | Contributors | 30 |
-| Open Issues | 12728 |
+| Open Issues | 31 |
 | Days Since Commit | 0 |
 | Total Commits | 100 |
 
 
 ### 4.6 Total Evidence Items
 
-**2** evidence items collected across all dimensions.
+**17** evidence items collected across all dimensions.
 
 ---
 
 ## 5. Risk Assessment
 
 **Overall Risk Level:** HIGH  
-**Risks Identified:** 1  
+**Risks Identified:** 4  
 **Warnings:** 0  
-**High Severity:** 0
+**High Severity:** 3
 
 ### Identified Risks
 
 | Severity | Category | Description | Source |
 |----------|----------|-------------|--------|
-| MEDIUM | Business | Shifts in memory-safe programming trends may stall Rust adoption. | business_agent |
+| HIGH | Volatility | High risk score: 0.87 | quant_agent |
+| HIGH | Drawdown | Significant drawdown: 48.7% | quant_agent |
+| HIGH | Volatility | High volatility: 75.3% | quant_agent |
+| MEDIUM | Business | Customer acquisition costs potentially undermining long-term platform ambitions | business_agent |
 
 
 ---
@@ -215,4 +237,4 @@ This report was generated by the **Autonomous Investment Research System (AIRS)*
 
 ---
 
-*Report generated by AIRS v0.3.6 — Evidence-Driven Loop Evolution*
+*Report generated by AIRS v0.3.8 — Evidence-Driven Loop Evolution*

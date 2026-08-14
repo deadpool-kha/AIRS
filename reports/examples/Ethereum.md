@@ -2,7 +2,7 @@
 
 **Asset Type:** `public_stock_with_repo`  
 **Ticker:** ETH-USD  
-**Generated:** 2026-08-14 03:22 UTC  
+**Generated:** 2026-08-14 06:49 UTC  
 **Research Iterations:** 3  
 **Halt Reason:** Circuit breaker: maximum iterations reached
 
@@ -12,8 +12,8 @@
 
 **Directional Bias: BEARISH** — The evidence supports a cautious or negative investment thesis.
 
-**Uncertainty Level:** 15% — **Low**  
-*Scarcity=0.00, Conflict=0.15, Coverage=0.00*
+**Uncertainty Level:** 12% — **Low**  
+*Scarcity=0.00, Conflict=0.12, Coverage=0.00*
 
 The research loop halted after **3 iterations** because: *Circuit breaker: maximum iterations reached*.
 
@@ -25,8 +25,8 @@ The research loop halted after **3 iterations** because: *Circuit breaker: maxim
 | Dimension | Score | Details |
 |-----------|-------|---------|
 | Data Quality | 82% | quant, business, technical |
-| Coverage | 89% | 16/18 features present |
-| Agreement | Low | 2 positive, 2 negative, 0 neutral across 4 dimensions |
+| Coverage | 100% | 18/18 features present |
+| Agreement | Low | 1 positive, 2 negative, 1 neutral across 4 dimensions |
 | Stability | Stable | No dimension flipped direction |
 
 ---
@@ -35,9 +35,9 @@ The research loop halted after **3 iterations** because: *Circuit breaker: maxim
 
 ### 3.1 Directional Bias
 
-- **Bullish Strength:** 1.08 (3 claims)
-- **Bearish Strength:** 2.88 (5 claims)
-- **Net Score:** -1.80
+- **Bullish Strength:** 1.03 (3 claims)
+- **Bearish Strength:** 3.33 (6 claims)
+- **Net Score:** -2.30
 - **Overall Direction:** BEARISH
 
 ### 3.2 Bull Case
@@ -46,11 +46,11 @@ The research loop halted after **3 iterations** because: *Circuit breaker: maxim
 
 | Evidence | Source | Strength | Raw Value |
 |----------|--------|----------|-----------|
-| 2 positive business signal(s) | business | 0.30 | 2 |
+| 1 positive business signal(s) | business | 0.25 | 1 |
 | 1 catalyst(s) identified | business | 0.33 | 1 |
 | High development activity: 18.42/week | technical | 0.45 | 18.42 |
 
-**Total Strength:** 1.08
+**Total Strength:** 1.03
 
 ### 3.3 Bear Case
 
@@ -60,11 +60,12 @@ The research loop halted after **3 iterations** because: *Circuit breaker: maxim
 |----------|--------|----------|-----------|
 | Price in downtrend | quant | 0.60 | downtrend |
 | MACD bearish — negative momentum | quant | 0.50 | bearish |
-| High risk score: 0.61 | quant | 0.75 | 0.6143 |
+| High beta (2.36) — elevated systematic risk | quant | 0.45 | 2.3612 |
+| High risk score: 0.80 | quant | 0.75 | 0.7996 |
 | Severe drawdown: 67.6% | quant | 0.70 | 0.6761 |
 | 1 business risks identified | business | 0.33 | 1 |
 
-**Total Strength:** 2.88
+**Total Strength:** 3.33
 
 ### 3.4 Base / Neutral Case
 
@@ -81,15 +82,15 @@ The research loop halted after **3 iterations** because: *Circuit breaker: maxim
 
 ### 3.5 Uncertainty Analysis
 
-**Uncertainty Score:** 15% — **Low**
+**Uncertainty Score:** 12% — **Low**
 
 | Factor | Value | Interpretation |
 |--------|-------|----------------|
 | Scarcity | 0.00 | Few signals available |
-| Conflict | 0.15 | Dimensions disagree |
+| Conflict | 0.12 | Dimensions disagree |
 | Coverage | 0.00 | Missing research dimensions |
 
-*Scarcity=0.00, Conflict=0.15, Coverage=0.00*
+*Scarcity=0.00, Conflict=0.12, Coverage=0.00*
 
 ---
 
@@ -104,15 +105,15 @@ The research loop halted after **3 iterations** because: *Circuit breaker: maxim
 |--------|-------|
 | Business | 1 item: `business_context` |
 | Technical | 1 item: `technical_context` |
-| Quant | 15 items: `price_data`, `returns`, `volatility`, `momentum`, `moving_averages`, `drawdown`, `risk_score`, `trend`, `current_price`, `data_points`, `rsi`, `macd`, `volume_profile`, `atr`, `volatility_regime` |
+| Quant | 17 items: `price_data`, `returns`, `volatility`, `momentum`, `moving_averages`, `drawdown`, `risk_score`, `trend`, `current_price`, `data_points`, `rsi`, `macd`, `volume_profile`, `atr`, `volatility_regime`, `beta`, `correlation_matrix` |
 
 ### 4.2 Evidence by Tier
 
 | Tier | Items |
 |------|-------|
-| Tier 1 | 0 items |
-| Tier 2 | 0 items |
-| Tier 3 | 15 items: `price_data`, `returns`, `volatility`, `momentum`, `moving_averages`, `drawdown`, `risk_score`, `trend`, `current_price`, `data_points`, `rsi`, `macd`, `volume_profile`, `atr`, `volatility_regime` |
+| Tier 1 | 9 items: `returns`, `volatility`, `momentum`, `moving_averages`, `drawdown`, `risk_score`, `trend`, `current_price`, `data_points` |
+| Tier 2 | 3 items: `rsi`, `macd`, `volume_profile` |
+| Tier 3 | 5 items: `price_data`, `atr`, `volatility_regime`, `beta`, `correlation_matrix` |
 
 ### 4.3 Quantitative Evidence
 
@@ -123,7 +124,7 @@ The research loop halted after **3 iterations** because: *Circuit breaker: maxim
 | Momentum | 5d: -0.0111, 10d: 0.0102, 20d: 0.0076, 30d: -0.0154 |
 | Moving Averages | sma_10: 1893.2700, sma_20: 1892.0100, sma_50: 1817.8400 |
 | Drawdown | max_drawdown: 0.6761, peak_date: 2025-08-22, trough_date: 2026-06-25 |
-| Risk Score | 0.6143 |
+| Risk Score | 0.7996 |
 | Trend | downtrend |
 | Current Price | 1887.4100 |
 | Rsi | 44.4600 |
@@ -131,22 +132,24 @@ The research loop halted after **3 iterations** because: *Circuit breaker: maxim
 | Volume Profile | avg_volume: 24448589307.0000, volume_trend: decreasing, relative_volume: 0.2700 |
 | Atr | 44.6340 |
 | Volatility Regime | normal |
+| Beta | 2.3612 |
+| Correlation Matrix | SPY: 0.5076, QQQ: 0.4653 |
 
 ### 4.4 Business Evidence
 
 
-**Summary:** Recent developments in the Ethereum market include a focus on price forecasts with some analysts targeting $2,500 for ETH. Whale accumulation and bullish chart patterns are cited as positive indicator...
+**Summary:** Recent developments in the Ethereum market include a focus on price forecasts with some analysts predicting an upward trend towards $2,500 as whale accumulation and bullish chart patterns align. There...
 **Signals:**
 | Type | Category | Description |
 |------|----------|-------------|
-| POSITIVE | Market | Whale accumulation and bullish chart patterns are cited as positive indicators for Ethereum's price target of $2,500. |
-| POSITIVE | Forecast | Analysts forecast ETH to rally to $2,500 based on whale buying activity and market trends. |
+| POSITIVE | Market | Whale accumulation and bullish chart patterns suggest potential upward trend towards $2,500. |
+| NEUTRAL | Competition | Ethereum is expected to outperform XRP and Solana in the future, but this is based on general market expectations without specific details. |
 
 **Catalysts (1):**
-- Potential breakout as volatility drops to 2%
+- Whale accumulation and bullish chart patterns indicating potential price breakout.
 
 **Risks (1):**
-- Range-bound market with low volume could limit upward movement
+- Price has been stuck below $2,000 due to ongoing uncertainties.
 
 
 ### 4.5 Technical Evidence
@@ -164,7 +167,7 @@ The research loop halted after **3 iterations** because: *Circuit breaker: maxim
 
 ### 4.6 Total Evidence Items
 
-**17** evidence items collected across all dimensions.
+**19** evidence items collected across all dimensions.
 
 ---
 
@@ -179,11 +182,11 @@ The research loop halted after **3 iterations** because: *Circuit breaker: maxim
 
 | Severity | Category | Description | Source |
 |----------|----------|-------------|--------|
-| HIGH | Volatility | High risk score: 0.61 | quant_agent |
+| HIGH | Volatility | High risk score: 0.80 | quant_agent |
 | HIGH | Drawdown | Significant drawdown: 67.6% | quant_agent |
 | HIGH | Volatility | High volatility: 53.3% | quant_agent |
 | HIGH | Momentum | Negative price trend: downtrend | quant_agent |
-| MEDIUM | Business | Range-bound market with low volume could limit upward movement | business_agent |
+| MEDIUM | Business | Price has been stuck below $2,000 due to ongoing uncertainties. | business_agent |
 
 
 ---
@@ -236,4 +239,4 @@ This report was generated by the **Autonomous Investment Research System (AIRS)*
 
 ---
 
-*Report generated by AIRS v0.3.6 — Evidence-Driven Loop Evolution*
+*Report generated by AIRS v0.3.8 — Evidence-Driven Loop Evolution*

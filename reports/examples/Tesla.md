@@ -1,8 +1,8 @@
-# Investment Research Memo: Bitcoin
+# Investment Research Memo: Tesla
 
 **Asset Type:** `public_stock_with_repo`  
-**Ticker:** BTC-USD  
-**Generated:** 2026-08-14 03:21 UTC  
+**Ticker:** TSLA  
+**Generated:** 2026-08-14 06:41 UTC  
 **Research Iterations:** 3  
 **Halt Reason:** Circuit breaker: maximum iterations reached
 
@@ -24,8 +24,8 @@ The research loop halted after **3 iterations** because: *Circuit breaker: maxim
 
 | Dimension | Score | Details |
 |-----------|-------|---------|
-| Data Quality | 82% | quant, business, technical |
-| Coverage | 100% | 18/18 features present |
+| Data Quality | 70% | quant, business, technical |
+| Coverage | 89% | 16/18 features present |
 | Agreement | Low | 1 positive, 2 negative, 1 neutral across 4 dimensions |
 | Stability | Stable | No dimension flipped direction |
 
@@ -35,48 +35,50 @@ The research loop halted after **3 iterations** because: *Circuit breaker: maxim
 
 ### 3.1 Directional Bias
 
-- **Bullish Strength:** 1.03 (3 claims)
-- **Bearish Strength:** 3.33 (6 claims)
-- **Net Score:** -2.30
+- **Bullish Strength:** 1.43 (3 claims)
+- **Bearish Strength:** 4.66 (9 claims)
+- **Net Score:** -3.23
 - **Overall Direction:** BEARISH
 
 ### 3.2 Bull Case
 
-**Thesis:** Bitcoin is undervalued with upside potential
+**Thesis:** Tesla is undervalued with upside potential
 
 | Evidence | Source | Strength | Raw Value |
 |----------|--------|----------|-----------|
-| 1 positive business signal(s) | business | 0.25 | 1 |
+| Price in uptrend | quant | 0.60 | uptrend |
+| MACD bullish — positive momentum | quant | 0.50 | bullish |
 | 1 catalyst(s) identified | business | 0.33 | 1 |
-| High development activity: 100.0/week | technical | 0.45 | 100.0 |
 
-**Total Strength:** 1.03
+**Total Strength:** 1.43
 
 ### 3.3 Bear Case
 
-**Thesis:** Bitcoin is overvalued or faces significant risks
+**Thesis:** Tesla is overvalued or faces significant risks
 
 | Evidence | Source | Strength | Raw Value |
 |----------|--------|----------|-----------|
-| Price in downtrend | quant | 0.60 | downtrend |
-| MACD bearish — negative momentum | quant | 0.50 | bearish |
-| High beta (1.56) — elevated systematic risk | quant | 0.45 | 1.5553 |
-| High risk score: 0.67 | quant | 0.75 | 0.67 |
-| Severe drawdown: 53.1% | quant | 0.70 | 0.5306 |
-| 1 business risks identified | business | 0.33 | 1 |
+| Severe monthly decline: -13.07% | quant | 0.70 | -13.07 |
+| Negative 20-day momentum: -10.7% | quant | 0.40 | -0.1073 |
+| RSI 66.3 — overbought, potential pullback | quant | 0.45 | 66.3 |
+| High risk score: 0.63 | quant | 0.75 | 0.6274 |
+| Severe drawdown: 39.1% | quant | 0.70 | 0.391 |
+| Elevated volatility regime | quant | 0.45 | elevated |
+| 1 negative business signal(s) | business | 0.25 | 1 |
+| 2 business risks identified | business | 0.41 | 2 |
+| Unhealthy developer ecosystem (health: 0.25) | technical | 0.55 | 0.25 |
 
-**Total Strength:** 3.33
+**Total Strength:** 4.66
 
 ### 3.4 Base / Neutral Case
 
-**Thesis:** Bitcoin is fairly valued with moderate growth
+**Thesis:** Tesla is fairly valued with moderate growth
 
 | Evidence | Source | Strength | Raw Value |
 |----------|--------|----------|-----------|
-| Normal volatility regime | quant | 0.25 | normal |
-| Moderate ecosystem health (health: 0.70) | technical | 0.30 | 0.7 |
+| Slowing development: 29 days since last commit | technical | 0.25 | 29 |
 
-**Total Strength:** 0.55
+**Total Strength:** 0.25
 
 
 ### 3.5 Uncertainty Analysis
@@ -104,51 +106,50 @@ The research loop halted after **3 iterations** because: *Circuit breaker: maxim
 |--------|-------|
 | Business | 1 item: `business_context` |
 | Technical | 1 item: `technical_context` |
-| Quant | 17 items: `price_data`, `returns`, `volatility`, `momentum`, `moving_averages`, `drawdown`, `risk_score`, `trend`, `current_price`, `data_points`, `rsi`, `macd`, `volume_profile`, `atr`, `volatility_regime`, `beta`, `correlation_matrix` |
+| Quant | 15 items: `price_data`, `returns`, `volatility`, `momentum`, `moving_averages`, `drawdown`, `risk_score`, `trend`, `current_price`, `data_points`, `rsi`, `macd`, `volume_profile`, `atr`, `volatility_regime` |
 
 ### 4.2 Evidence by Tier
 
 | Tier | Items |
 |------|-------|
-| Tier 1 | 9 items: `returns`, `volatility`, `momentum`, `moving_averages`, `drawdown`, `risk_score`, `trend`, `current_price`, `data_points` |
-| Tier 2 | 3 items: `rsi`, `macd`, `volume_profile` |
-| Tier 3 | 5 items: `price_data`, `atr`, `volatility_regime`, `beta`, `correlation_matrix` |
+| Tier 1 | 0 items |
+| Tier 2 | 0 items |
+| Tier 3 | 15 items: `price_data`, `returns`, `volatility`, `momentum`, `moving_averages`, `drawdown`, `risk_score`, `trend`, `current_price`, `data_points`, `rsi`, `macd`, `volume_profile`, `atr`, `volatility_regime` |
 
 ### 4.3 Quantitative Evidence
 
 | Metric | Value |
 |--------|-------|
-| Returns | daily_mean: -0.1323, daily_std: 2.2677, weekly: 2.1400, monthly: -0.8500 |
-| Volatility | 0.3600 |
-| Momentum | 5d: 0.0214, 10d: -0.0181, 20d: 0.0058, 30d: 0.0026 |
-| Moving Averages | sma_10: 63825.0000, sma_20: 64335.8600, sma_50: 63263.6300 |
-| Drawdown | max_drawdown: 0.5306, peak_date: 2025-10-06, trough_date: 2026-06-30 |
-| Risk Score | 0.6700 |
-| Trend | downtrend |
-| Current Price | 64159.9900 |
-| Rsi | 37.8700 |
-| Macd | macd_line: -84.0891, signal_line: 44.5275, histogram: -128.6166, signal: bearish |
-| Volume Profile | avg_volume: 46445121459.0000, volume_trend: decreasing, relative_volume: 0.5100 |
-| Atr | 1479.0474 |
-| Volatility Regime | normal |
-| Beta | 1.5553 |
-| Correlation Matrix | SPY: 0.4881, QQQ: 0.4454 |
+| Returns | daily_mean: 0.0483, daily_std: 2.9291, weekly: 3.4600, monthly: -13.0700 |
+| Volatility | 0.4650 |
+| Momentum | 5d: 0.0346, 10d: 0.0924, 20d: -0.1073, 30d: -0.1360 |
+| Moving Averages | sma_10: 326.1500, sma_20: 331.0700, sma_50: 372.7100 |
+| Drawdown | max_drawdown: 0.3910, peak_date: 2025-12-16, trough_date: 2026-07-29 |
+| Risk Score | 0.6274 |
+| Trend | uptrend |
+| Current Price | 339.9600 |
+| Rsi | 66.3000 |
+| Macd | macd_line: -13.2855, signal_line: -17.5653, histogram: 4.2798, signal: bullish |
+| Volume Profile | avg_volume: 66135711.0000, volume_trend: decreasing, relative_volume: 0.5200 |
+| Atr | 10.9664 |
+| Volatility Regime | elevated |
 
 ### 4.4 Business Evidence
 
 
-**Summary:** Recent business developments in the Bitcoin market include Metaplanet launching BitBonds while denying the sale of $320 million worth of Bitcoin. Analysts predict that Bitcoin and Ethereum will outper...
+**Summary:** Tesla has seen several key business developments recently. A new study suggests that CEO Elon Musk may have inflated his compensation, while investor Michael Burry has made significant moves in the ma...
 **Signals:**
 | Type | Category | Description |
 |------|----------|-------------|
-| NEUTRAL | Product | Metaplanet launching BitBonds while denying the sale of $320 million worth of Bitcoin. |
-| POSITIVE | Future Outlook | Analysts predict that Bitcoin and Ethereum will outperform XRP and Solana in the future, with some forecasting a price path to $100,000. |
+| NEUTRAL | Competition | Tesla is facing scrutiny over its business practices and stock performance, but there are signs of improvement in its China market presence. |
+| NEGATIVE | Regulation | A new study suggests that CEO Elon Musk may have inflated his compensation, indicating potential regulatory or legal risks. |
 
 **Catalysts (1):**
-- Upcoming Fed rate decision which could impact market sentiment and Bitcoin's price.
+- Resolution of the long-standing strike with Sweden's IF Metall union after Tesla buyouts
 
-**Risks (1):**
-- Current pressure on Bitcoin's price as noted by multiple sources.
+**Risks (2):**
+- Potential for larger market downturn as indicated by Michael Burry’s actions
+- Regulatory scrutiny over CEO compensation as suggested by the new study
 
 
 ### 4.5 Technical Evidence
@@ -156,36 +157,44 @@ The research loop halted after **3 iterations** because: *Circuit breaker: maxim
 
 | Metric | Value |
 |--------|-------|
-| Health Score | 0.7 |
-| Commit Frequency | 100.0/week |
-| Contributors | 30 |
-| Open Issues | 691 |
-| Days Since Commit | 0 |
+| Health Score | 0.25 |
+| Commit Frequency | 0.76/week |
+| Contributors | 18 |
+| Open Issues | 130 |
+| Days Since Commit | 29 |
 | Total Commits | 100 |
 
 
 ### 4.6 Total Evidence Items
 
-**19** evidence items collected across all dimensions.
+**17** evidence items collected across all dimensions.
 
 ---
 
 ## 5. Risk Assessment
 
 **Overall Risk Level:** HIGH  
-**Risks Identified:** 4  
-**Warnings:** 0  
-**High Severity:** 3
+**Risks Identified:** 7  
+**Warnings:** 1  
+**High Severity:** 5
 
 ### Identified Risks
 
 | Severity | Category | Description | Source |
 |----------|----------|-------------|--------|
-| HIGH | Volatility | High risk score: 0.67 | quant_agent |
-| HIGH | Drawdown | Significant drawdown: 53.1% | quant_agent |
-| HIGH | Momentum | Negative price trend: downtrend | quant_agent |
-| MEDIUM | Business | Current pressure on Bitcoin's price as noted by multiple sources. | business_agent |
+| HIGH | Volatility | High risk score: 0.63 | quant_agent |
+| HIGH | Drawdown | Significant drawdown: 39.1% | quant_agent |
+| HIGH | Volatility | High volatility: 46.5% | quant_agent |
+| HIGH | Ecosystem | Unhealthy ecosystem: health score 0.25 | technical_agent |
+| HIGH | Regulation | A new study suggests that CEO Elon Musk may have inflated his compensation, indicating potential regulatory or legal risks. | business_agent |
+| MEDIUM | Business | Potential for larger market downturn as indicated by Michael Burry’s actions | business_agent |
+| MEDIUM | Business | Regulatory scrutiny over CEO compensation as suggested by the new study | business_agent |
 
+### Warnings
+
+| Severity | Category | Description | Source |
+|----------|----------|-------------|--------|
+| MEDIUM | Development | Slowing development: 29 days since last commit | technical_agent |
 
 ---
 
@@ -197,7 +206,12 @@ The research loop halted after **3 iterations** because: *Circuit breaker: maxim
 
 ### 6.2 Unresolved Contradictions
 
-*No unresolved contradictions. All detected contradictions were either resolved or flagged for human review.*
+**[LOW]** cross_dimension_tension
+
+- **Description:** Quant signals bullish but business has negative signals
+- **Question:** Is price optimism justified given business headwinds?
+- **Rationale:** Mild tension between price action and fundamentals — more data may clarify
+
 
 ---
 
@@ -237,4 +251,4 @@ This report was generated by the **Autonomous Investment Research System (AIRS)*
 
 ---
 
-*Report generated by AIRS v0.3.6 — Evidence-Driven Loop Evolution*
+*Report generated by AIRS v0.3.8 — Evidence-Driven Loop Evolution*

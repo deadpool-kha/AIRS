@@ -1,0 +1,220 @@
+# Investment Research Memo: OpenAI
+
+**Asset Type:** `open_source_or_pre_launch`  
+**Ticker:** OpenAI  
+**Generated:** 2026-08-14 06:50 UTC  
+**Research Iterations:** 2  
+**Halt Reason:** Thesis stabilized across iterations; deeper data did not change the story
+
+---
+
+## 1. Executive Summary
+
+**Directional Bias: NEUTRAL** — Available evidence does not strongly favor either direction.
+
+**Uncertainty Level:** 62% — **High**  
+*Scarcity=0.15, Conflict=0.38, Coverage=0.08*
+
+The research loop halted after **2 iterations** because: *Thesis stabilized across iterations; deeper data did not change the story*.
+
+
+---
+
+## 2. Audit Dashboard
+
+| Dimension | Score | Details |
+|-----------|-------|---------|
+| Data Quality | 90% | business, technical |
+| Coverage | 100% | 2/2 features present |
+| Agreement | Medium | 0 positive, 0 negative, 2 neutral across 2 dimensions |
+| Stability | Stable | No dimension flipped direction |
+
+---
+
+## 3. Investment Thesis
+
+### 3.1 Directional Bias
+
+- **Bullish Strength:** 0.63 (2 claims)
+- **Bearish Strength:** 0.66 (2 claims)
+- **Net Score:** -0.03
+- **Overall Direction:** NEUTRAL
+
+### 3.2 Bull Case
+
+**Thesis:** OpenAI is undervalued with upside potential
+
+| Evidence | Source | Strength | Raw Value |
+|----------|--------|----------|-----------|
+| 2 positive business signal(s) | business | 0.30 | 2 |
+| 1 catalyst(s) identified | business | 0.33 | 1 |
+
+**Total Strength:** 0.63
+
+### 3.3 Bear Case
+
+**Thesis:** OpenAI is overvalued or faces significant risks
+
+| Evidence | Source | Strength | Raw Value |
+|----------|--------|----------|-----------|
+| 1 negative business signal(s) | business | 0.25 | 1 |
+| 2 business risks identified | business | 0.41 | 2 |
+
+**Total Strength:** 0.66
+
+### 3.4 Base / Neutral Case
+
+**Thesis:** OpenAI is fairly valued with moderate growth
+
+| Evidence | Source | Strength | Raw Value |
+|----------|--------|----------|-----------|
+| Moderate ecosystem health (health: 0.60) | technical | 0.30 | 0.6 |
+
+**Total Strength:** 0.30
+
+
+### 3.5 Uncertainty Analysis
+
+**Uncertainty Score:** 62% — **High**
+
+| Factor | Value | Interpretation |
+|--------|-------|----------------|
+| Scarcity | 0.15 | Few signals available |
+| Conflict | 0.38 | Dimensions disagree |
+| Coverage | 0.08 | Missing research dimensions |
+
+*Scarcity=0.15, Conflict=0.38, Coverage=0.08*
+
+---
+
+
+---
+
+## 4. Evidence Register Summary
+
+### 4.1 Evidence by Source
+
+| Source | Items |
+|--------|-------|
+| Business | 1 item: `business_context` |
+| Technical | 1 item: `technical_context` |
+| Quant | 0 items |
+
+### 4.2 Evidence by Tier
+
+| Tier | Items |
+|------|-------|
+| Tier 1 | 0 items |
+| Tier 2 | 0 items |
+| Tier 3 | 0 items |
+
+### 4.3 Quantitative Evidence
+
+| Metric | Value |
+|--------|-------|
+
+### 4.4 Business Evidence
+
+
+**Summary:** OpenAI has introduced "Ultrafast," a new mode for its GPT-5.6 Sol model that significantly increases processing speed by 14 times, powered by Cerebras technology. The company's revenue run rate is pro...
+**Signals:**
+| Type | Category | Description |
+|------|----------|-------------|
+| POSITIVE | Product | Introduction of Ultrafast mode for GPT-5.6 Sol, significantly increasing processing speed by 14 times. |
+| POSITIVE | Funding | Projected revenue run rate exceeds $40 billion ahead of potential IPO, doubling from the previous year. |
+| NEGATIVE | Competition | Engaged in a pricing competition with Anthropic as Chinese AI firms gain momentum. |
+
+**Catalysts (1):**
+- Potential IPO of OpenAI
+
+**Risks (2):**
+- Departure of revenue chief Denise Dresser
+- Pricing competition with Anthropic and emerging Chinese AI rivals
+
+
+### 4.5 Technical Evidence
+
+
+| Metric | Value |
+|--------|-------|
+| Health Score | 0.6 |
+| Commit Frequency | 7.07/week |
+| Contributors | 30 |
+| Open Issues | 606 |
+| Days Since Commit | 0 |
+| Total Commits | 100 |
+
+
+### 4.6 Total Evidence Items
+
+**2** evidence items collected across all dimensions.
+
+---
+
+## 5. Risk Assessment
+
+**Overall Risk Level:** HIGH  
+**Risks Identified:** 3  
+**Warnings:** 0  
+**High Severity:** 1
+
+### Identified Risks
+
+| Severity | Category | Description | Source |
+|----------|----------|-------------|--------|
+| HIGH | Competition | Engaged in a pricing competition with Anthropic as Chinese AI firms gain momentum. | business_agent |
+| MEDIUM | Business | Departure of revenue chief Denise Dresser | business_agent |
+| MEDIUM | Business | Pricing competition with Anthropic and emerging Chinese AI rivals | business_agent |
+
+
+---
+
+## 6. Active Questions & Unresolved Contradictions
+
+### 6.1 Active Research Questions
+
+*No active questions remain. The Critic found sufficient evidence to form a view.*
+
+### 6.2 Unresolved Contradictions
+
+*No unresolved contradictions. All detected contradictions were either resolved or flagged for human review.*
+
+---
+
+## 7. Appendix
+
+### 7.1 Methodology
+
+This report was generated by the **Autonomous Investment Research System (AIRS)**, an evidence-driven research infrastructure. The system operates through the following pipeline:
+
+1. **Capability Probe** — Detects available research dimensions (quantitative, technical, business)
+2. **Bootstrap** — Runs Business and Technical agents once to establish baseline context
+3. **Iterative Evidence Accumulation** — Quant Agent runs tiered computations (Tier 1: 3mo → Tier 2: 6mo → Tier 3: 1y)
+4. **Critic Audit** — 6-phase rule-based evaluation: Inventory → Signals → Dashboard → Contradictions → Active Questions → Halt Decision
+5. **Hypothesis Generation** — Directional Bias + Uncertainty computed from evidence weights
+6. **Risk Assessment** — Downside analysis and cross-agent contradiction detection
+7. **Report Generation** — Structured memo synthesis
+
+### 7.2 Key Design Principles
+
+- **No fake probabilities.** Directional bias uses raw evidence strength, not normalized percentages.
+- **Explicit uncertainty.** Uncertainty is computed independently from directional conviction.
+- **Evidence provenance.** Every claim traces back to its source agent, computation tier, and data period.
+- **Deterministic analysis.** Financial calculations are rule-based; LLMs are used only for qualitative tasks (news summarization, report prose).
+- **Contradiction-first.** The system actively searches for conflicting signals rather than suppressing them.
+
+### 7.3 Limitations
+
+- Research is based on publicly available data only
+- Business Agent uses live RSS feeds; historical news access is limited
+- Technical Agent analyzes a single repository snapshot
+- Quant metrics are computed from closing prices and do not account for intraday movements
+- The system does not predict prices; it structures and audits research quality
+
+### 7.4 Disclaimer
+
+*This report is generated for research and educational purposes only. It does not constitute investment advice, an offer to buy or sell securities, or a recommendation of any investment strategy. Always conduct independent due diligence and consult a qualified financial advisor before making investment decisions.*
+
+---
+
+*Report generated by AIRS v0.3.8 — Evidence-Driven Loop Evolution*

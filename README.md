@@ -50,7 +50,7 @@ Halt: Circuit breaker hit. Returning best available analysis.
 Report: reports/output/AAPL_20260813_043449.md
 ```
 
-([View full example report →](reports/examples/AAPL_20260814_033706.md))
+([View full example report →](reports/examples/))
 
 ---
 
@@ -193,7 +193,7 @@ AIRS/
 | [Decision Log](docs/architecture/DECISIONS.md)          | Engineering decisions                              |
 | [Roadmap](docs/development/ROADMAP.md)                  | Phase-based development plan                       |
 | [Changelog](docs/SETUP.md)                              | Installation, dependencies, troubleshooting        |
-
+| [Example Research Reports](reports/examples/)           | 30 preserved AIRS research sessions across public companies, cryptocurrencies, and startups |
 ---
 
 ## Current Status
