@@ -50,7 +50,7 @@ Halt: Circuit breaker hit. Returning best available analysis.
 Report: reports/output/AAPL_20260813_043449.md
 ```
 
-([View full example report →](docs/research/CASE_STUDIES.md))
+([View full example report →](reports/examples/AAPL_20260814_033706.md))
 
 ---
 
