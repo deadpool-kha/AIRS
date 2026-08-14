@@ -192,7 +192,8 @@ AIRS/
 | [Limitations](docs/research/LIMITATIONS.md)             | Known boundaries                                   |
 | [Decision Log](docs/architecture/DECISIONS.md)          | Engineering decisions                              |
 | [Roadmap](docs/development/ROADMAP.md)                  | Phase-based development plan                       |
-| [Changelog](docs/SETUP.md)                              | Installation, dependencies, troubleshooting        |
+| [Setup Guide](docs/SETUP.md)                            | Installation, dependencies, troubleshooting        |
+| [Changelog](docs/development/CHANGELOG.md)              | Version history       |
 | [Example Research Reports](reports/examples/)           | 30 preserved AIRS research sessions across public companies, cryptocurrencies, and startups |
 ---
 
