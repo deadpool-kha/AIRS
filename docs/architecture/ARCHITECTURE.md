@@ -939,7 +939,7 @@ The system values:
 
 ---
 
-# AIRS v0.3.7
+# AIRS v0.3.9
 
 ## Autonomous Investment Research System
 

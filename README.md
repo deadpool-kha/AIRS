@@ -37,7 +37,7 @@ The loop is genuinely adaptive. Apple might halt at iteration 1; Bitcoin might n
 
 ```text
 ╔══════════════════════════════════════════════╗
-║  AIRS  v0.3.8                                ║
+║  AIRS  v0.3.9                                ║
 ║  Evidence-Driven Investment Research          ║
 ╚══════════════════════════════════════════════╝
 
@@ -220,7 +220,7 @@ This project is released under the [MIT License](/LICENSE).
 
 <div align="center">
 
-**AIRS v0.3.8** — *Research should be explainable before it is persuasive.*
+**AIRS v0.3.9** — *Research should be explainable before it is persuasive.*
 
 </div>
 

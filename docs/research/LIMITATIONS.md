@@ -194,7 +194,7 @@ AIRS is local-first. There is currently no:
 
 | Issue | Impact | Status |
 |-------|--------|--------|
-| Report footer shows `v0.3.6` instead of `v0.3.7` | Cosmetic | Fixed in template — verify `reports/templates/report.md.j2` |
+| Report footer shows `v0.3.6` instead of `v0.3.9` | Cosmetic | Fixed in template — verify `reports/templates/report.md.j2` |
 | Risk Agent legacy bridge | Minor architectural debt | Unchanged — direct Evidence Register integration still planned |
 | 30-day outcome scoring requires time to pass | Audit stats populate slowly | Time-gated by design; run `--audit` after 2026-09-12 |
 | Startups (no ticker) cannot be scored | Audit coverage gap | By design — requires Phase 11 proxy metrics |
@@ -219,7 +219,7 @@ If AIRS has never backtested its thresholds, it tells you.
 
 &lt;div align="center"&gt;
 
-## AIRS v0.3.7
+## AIRS v0.3.9
 
 **Evidence-Driven Investment Research Infrastructure**
 

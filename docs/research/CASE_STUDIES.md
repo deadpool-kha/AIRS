@@ -785,7 +785,7 @@ Running 10 entities sequentially reveals cross-sector patterns that single-shot 
 
 <div align="center">
 
-# AIRS v0.3.7
+# AIRS v0.3.9
 
 **Evidence-Driven Investment Research Infrastructure**
 

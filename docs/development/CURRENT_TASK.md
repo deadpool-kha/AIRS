@@ -57,7 +57,7 @@
 
    # Overall Progress
 
-**Current Version:** `v0.3.8`
+**Current Version:** `v0.3.9`
 ████████████████████████████████████████████░░ 95%
 Completed
 ├── Data Foundation

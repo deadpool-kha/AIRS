@@ -820,7 +820,7 @@ The following are **not** part of the v0.3.8 MVP:
 
 <div align="center">
 
-## AIRS v0.3.7
+## AIRS v0.3.9
 
 ## Evidence-Driven Investment Research Infrastructure
 

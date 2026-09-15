@@ -470,6 +470,6 @@ docs/
 
 <div align="center">
 
-**AIRS v0.3.7 — Evidence-Driven Investment Research Infrastructure**
+**AIRS v0.3.9 — Evidence-Driven Investment Research Infrastructure**
 
 </div>
