@@ -173,7 +173,7 @@ News headlines:
 Summary:"""
 
         try:
-            response = self.ollama.generate(prompt, model="qwen2.5:7b")
+            response = self.ollama.generate(prompt)
             return response.strip()
         except Exception as e:
             logger.error(f"LLM summary failed: {e}")
@@ -209,7 +209,7 @@ Respond ONLY with valid JSON in this exact format:
 JSON response:"""
 
         try:
-            response = self.ollama.generate(prompt, model="qwen2.5:7b")
+            response = self.ollama.generate(prompt)
             # Clean up response — sometimes LLM adds markdown
             cleaned = response.strip()
             if cleaned.startswith("```json"):

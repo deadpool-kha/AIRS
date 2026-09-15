@@ -15,7 +15,7 @@ class OllamaClient:
     """Client for Ollama local LLM API."""
 
     DEFAULT_HOST = "http://localhost:11434"
-    DEFAULT_MODEL = "qwen3:4b"
+    DEFAULT_MODEL = "qwen2.5:7b"
 
     def __init__(self, host: str = None, model: str = None):
         self.host = host or self.DEFAULT_HOST
