@@ -69,7 +69,30 @@ class RiskAgent:
                 "description": f"High volatility: {quant['volatility']:.1%}",
                 "source": "quant_agent"
             })
-
+            
+        beta = quant.get("beta")
+        if isinstance(beta, (int, float)):
+            if beta > 1.8:
+                risks.append({
+                    "category": "market_sensitivity",
+                    "severity": "high",
+                    "description": f"Very high market beta ({beta:.2f}) — amplified drawdowns in market selloffs",
+                    "source": "quant_agent"
+                })
+            elif beta > 1.3:
+                warnings.append({
+                    "category": "market_sensitivity",
+                    "severity": "medium",
+                    "description": f"Elevated market beta ({beta:.2f}) — higher volatility than the market",
+                    "source": "quant_agent"
+                })
+            elif beta < 0.5:
+                warnings.append({
+                    "category": "market_sensitivity",
+                    "severity": "medium",
+                    "description": f"Low market beta ({beta:.2f}) — may lag strong market rallies",
+                    "source": "quant_agent"
+                })
         if quant.get("trend") in ["downtrend", "weak_downtrend"]:
             risks.append({
                 "category": "momentum",
