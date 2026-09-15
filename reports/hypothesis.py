@@ -181,15 +181,7 @@ def _assess_evidence(entity: str, register: EvidenceRegister) -> Dict[str, List[
                     claims["neutral"].append(EvidenceClaim(
                         f"RSI {rsi:.1f} in neutral zone — no clear directional bias", "quant", "neutral", 0.30, rsi))
 
-        if register.has("beta"):
-            beta = register.get("beta")
-            if isinstance(beta, (int, float)):
-                if 0.5 < beta < 1.0:
-                    claims["bullish"].append(EvidenceClaim(
-                        f"Low beta ({beta:.2f}) — defensive growth profile", "quant", "bullish", 0.35, beta))
-                elif beta > 1.5:
-                    claims["bearish"].append(EvidenceClaim(
-                        f"High beta ({beta:.2f}) — elevated systematic risk", "quant", "bearish", 0.45, beta))
+        
 
         if register.has("risk_score"):
             rs = register.get("risk_score")
