@@ -148,7 +148,9 @@ class EvidenceDrivenLoop:
         Main entry point. Executes the full evidence-driven pipeline.
         """
         config = config or {}
-        ticker = ticker or entity
+        # NOTE: Do NOT fall back to entity here. The capability probe sets
+        # the canonical ticker (or leaves it None for non-tradeable assets).
+        # Falling back would store entity names like "Anthropic" as tickers.
 
         print(f"\n{c('AIRS Evidence-Driven Loop', BOLD, CYAN)}  |  {c(entity, BOLD, WHITE)}")
 
@@ -158,6 +160,10 @@ class EvidenceDrivenLoop:
             # Phase 0: Capability Probe
             self.asset_profile = self._probe_capabilities(entity, ticker, repo)
             self._display_profile(self.asset_profile)
+            
+            # Canonical ticker comes from the probe (None if not tradeable)
+            
+            ticker = self.asset_profile.get("ticker")
 
             # Phase 1: Bootstrap
             self._bootstrap(entity, ticker, repo)

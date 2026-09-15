@@ -128,7 +128,11 @@ def init_db():
             final_iteration INTEGER,
             status TEXT CHECK(status IN ('running', 'completed', 'failed')),
             critique_summary TEXT,
-            should_iterate_history TEXT
+            should_iterate_history TEXT,
+            halt_reason TEXT,
+            evidence_count INTEGER,
+            asset_type TEXT,
+            dashboard_history TEXT
         )
     """)
         # --- reports table ---

@@ -12,6 +12,7 @@ venv/
 # Databases
 *.db
 *.sqlite
+airs.db.backup_*
 
 # Local models
 models/
@@ -42,3 +43,7 @@ reports/output/
 *.pdf
 
 todo1.txt
+
+# clean ups
+cleanup_phase9.py
+dry_run_audit.py

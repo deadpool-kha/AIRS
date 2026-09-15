@@ -355,6 +355,20 @@ def main():
         print(f"Total: {len(rows)} session(s)")
         return 0
 
+    if args.list_sectors:
+        from config.sectors import list_sectors
+        sectors = list_sectors()
+        print(f"\n{'='*50}")
+        print("VALID CANONICAL SECTORS")
+        print(f"{'='*50}")
+        for s in sectors:
+            print(f"  {s}")
+        print(f"{'='*50}")
+        print(f"Total: {len(sectors)} sectors")
+        print("\nUsage: python main.py --entity NVDA --sector semiconductors --hypotheses")
+        print("Aliases accepted: semi, chip, ai, cloud, crypto, security, etc.")
+        return 0
+
     # Validate sector if provided
     if args.sector:
         canonical = normalize_sector(args.sector)
