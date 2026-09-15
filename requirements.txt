@@ -1,7 +1,19 @@
-pandas
-numpy
-requests
-python-dotenv
-pydantic
-fastapi
-uvicorn
+# ── Core data ────────────────────────────────────────────────────
+pandas==3.0.3
+numpy==2.5.1
+
+# ── Market data ──────────────────────────────────────────────────
+yfinance==1.5.1
+
+# ── News / RSS ───────────────────────────────────────────────────
+feedparser==6.0.12
+
+# ── HTTP ─────────────────────────────────────────────────────────
+requests==2.34.2
+
+# ── Report generation ────────────────────────────────────────────
+Jinja2==3.1.6
+Markdown==3.10.3
+
+# ── PDF export (optional — degrades gracefully if missing) ───────
+weasyprint==69.0
