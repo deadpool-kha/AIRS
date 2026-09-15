@@ -284,7 +284,7 @@
 
 
 
-```markdown
+
 ## [0.3.6] - 2026-07-31
 
 ### Added
@@ -393,3 +393,19 @@
 ### Known Limitations
 - 30-day backtesting requires 30 days to pass before outcomes can be scored
 - Historical session backfill (35 sessions) not yet performed — audit stats will populate as sessions age
+
+## [Unreleased] - 2026-09-14
+
+### Fixed
+- Ollama model config drift — `OllamaClient.DEFAULT_MODEL` was `qwen3:4b` but `business.py` hardcoded `qwen2.5:7b`. Aligned on `qwen2.5:7b`; `qwen3:4b` returns empty responses on the JSON extraction prompt.
+- Hypothesis engine no longer treats beta as a directional signal (Decision 037).
+
+### Added
+- Market beta now surfaced as a risk dimension in the Risk Agent.
+- `test_qwen3.py` added to `.gitignore`.
+
+### Changed
+- `requirements.txt` now pins runtime dependencies from actual imports; removed unused declarations (python-dotenv, pydantic, fastapi); added missing deps (feedparser, Jinja2, Markdown, weasyprint, yfinance).
+
+### Decisions
+- Decision 037: Separate directional metrics from magnitude metrics.

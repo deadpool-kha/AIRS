@@ -857,3 +857,63 @@ Reason:
 Rejected alternatives:
 - Silent NULL on unknown sector (creates unclean audit data)
 - Auto-detection via LLM (expensive, non-deterministic, overkill for MVP)
+
+# Decision 037
+
+## Separate directional metrics from magnitude metrics
+
+Date: 2026-09-14
+
+Decision:
+Classify every quantitative metric as either *directional* (does it tell us which way price moves?) or *magnitude* (does it tell us how much price moves?). Direction metrics may contribute to `bullish` / `bearish` / `neutral` claims in the Hypothesis Engine. Magnitude metrics must not. Magnitude metrics belong in the Risk Agent and in the Confidence/Uncertainty layer.
+
+Reason:
+The Phase 9 audit (2026-09-14, 30 sessions, 23 scored) revealed that the Hypothesis Engine was appending beta to bullish/bearish claim buckets:
+
+```python
+if 0.5 < beta < 1.0:
+    → bullish claim (defensive growth)
+elif beta > 1.5:
+    → bearish claim (elevated systematic risk)
+```
+This is wrong. Beta measures market sensitivity — an amplifier, not a compass. A high-beta stock amplifies both upside and downside. Treating beta > 1.5 as "bearish" added a phantom bearish claim worth +0.45 strength to every high-volatility asset.
+
+## Evidence from the audit:
+
+- All three L1-blockchain sessions (BTC, ETH, SOL) were rated BEARISH and all rallied +22% to +32% over 30 days.
+
+- NVDA was rated BULLISH with net +0.48, but carried a +0.45 bear claim from beta that partially masked the bullish signal.
+
+- The same class of bug affects risk_score, drawdown, volatility_regime, and volatility — all magnitude metrics currently in the directional claims list.
+
+- The bug is a category error: mixing "how much" with "which way."
+
+## Implementation:
+
+Commit fix(hypothesis): stop using beta as a directional signal (2026-09-14) removed the beta block from _assess_evidence() in reports/hypothesis.py.
+
+Commit feat(risk): surface market beta as a risk dimension (2026-09-14) added beta rules to agents/risk.py:
+
+- beta > 1.8 → high severity risk
+
+- beta > 1.3 → medium warning
+
+- beta < 0.5 → medium warning (opportunity cost, not downside)
+
+- 0.5–1.3 → no claim (market-like range)
+
+### Follow-up work (Phase 9.5) will apply the same treatment to risk_score, drawdown, volatility_regime, and volatility.
+
+## Rejected alternatives:
+
+- Keep beta as a direction signal but adjust thresholds (still categorically wrong)
+
+- Remove beta entirely (loses a useful risk signal)
+
+- Move beta into the Critic's contradiction rules (adds complexity without solving the core issue)
+
+## Revisit if:
+
+- The audit shows Low-uncertainty sessions still underperform after the magnitude/direction split.
+
+- A metric's classification becomes ambiguous (e.g., RSI extremes are arguably both).
