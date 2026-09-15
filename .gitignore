@@ -47,3 +47,5 @@ todo1.txt
 # clean ups
 cleanup_phase9.py
 dry_run_audit.py
+
+test_qwen3.py
